@@ -1,0 +1,131 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>kpi</title>
+		<meta charset = "utf-8">
+		<script type = "text/javascript" src = "kpi.js"></script>
+	</head>
+	<body>
+		<script>
+			const router = kpi.router();
+			// *** //
+			function page_home()
+			{
+				const content = kpi.view();
+				// *** //
+				kpi.into.body.set
+				(
+					content.wrap
+					(
+						{ size: '40%', marginRight: '1%' }, // Field 0
+						{ size: '30%', marginLeft: '1%', marginRight: '1%' }, // Field 1
+						{ size: '20%', marginLeft: '1%', marginRight: '1%' }, // Filed 2
+						{ size: '10%', marginLeft: '1%', padding: '10px' } // Field 3
+					)
+				);
+				// *** //
+				const list1 = new kpi.list();
+				const list2 = new kpi.list();
+				const list3 = new kpi.list();
+				const butn1 = new kpi.button();
+				const inpt1 = new kpi.input();
+				const slide = new kpi.slider()
+				// *** //
+				list1.begin();
+				list1.item( "a.tr", "Turkish", () => alert("Turkish is a nice language") );
+				list1.item( "a.de", "German", () => alert("German is an objective language") );
+				list1.item( "a.en", "English", () => alert("English is a smart language") );
+				list1.close();
+				// *** //
+				list2.begin();
+				list2.item( "b.tr", "Istanbul", () => router.goto('/next') );
+				list2.item( "b.de", "Berlin", () => router.goto('/next') );
+				list2.item( "b.en", "London", () => router.goto('/next') );
+				list2.close();
+				// *** //
+				list3.begin();
+				list3.item( "c.earth", "Earth" );
+				list3.item( "c.moon", "Moon" );
+				list3.item( "c.mars", "Mars" );
+				list3.close();
+				// *** //
+				butn1.create( "Click Me :-)", () => {
+					if ( confirm("Shell I do something?") )
+						alert("OK, but I don't know, what to do :-)");
+				} );
+				// *** //
+				slide.create();
+				// *** //
+				inpt1.create( 
+					"Type something...",
+					[
+						{
+							event : 'keydown',
+							callback : (e) => {
+								if ( e.keyCode === 13 )
+									alert(e.target.value);
+							}
+						}						
+					]
+				);
+				// *** //
+				content.set( 0, list1.get() );
+				content.set( 1, list2.get() );
+				content.set( 2, list3.get() );
+				content.set( 3, butn1.get() );
+				content.put( 3, inpt1.get() );
+				content.put( 3, slide.get() );
+				// *** //
+				list1.init();
+				list2.init();
+				butn1.init();
+				inpt1.init();
+				slide.init();
+			}
+			// *** //
+			function page_next()
+			{
+				const content = kpi.view();
+				// *** //
+				kpi.into.body.set
+				(
+					content.cols
+					(
+						{ size: '50%', marginRight: '1%' },
+						{ size: '50%', marginLeft: '1%' }
+					)
+				);
+				// *** //
+				const list1 = new kpi.list();
+				const list2 = new kpi.list();
+				// *** //
+				list1.begin();
+				list1.item( "a.es", "Spanish", () => alert("Spanish is a nice language") );
+				list1.item( "a.fr", "French", () => alert("French is an objective language") );
+				list1.item( "a.it", "Italian", () => alert("Italian is a smart language") );
+				list1.close();
+				// *** //
+				list2.begin();
+				list2.item( "b.jp", "Tokio", () => router.goto('/') );
+				list2.item( "b.ko", "Seoul", () => router.goto('/') );
+				list2.item( "b.id", "Jakarta", () => router.goto('/') );
+				list2.close();
+				// *** //
+				content.set( 0, list1.get() );
+				content.set( 1, list2.get() );
+				// *** //
+				list1.init();
+				list2.init();
+			}
+			// *** //
+			router.init
+			(
+				{ path: '/', page: page_home },
+				{ path: '/next', page: page_next }
+			);
+			// *** //
+			router.goto("/");
+		</script>
+	</body>
+</html>

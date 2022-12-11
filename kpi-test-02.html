@@ -1,0 +1,1370 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>kpi</title>
+		<meta charset = "utf-8">
+		<script type = "text/javascript" src = "kpi.js"></script>
+		<script type = "text/javascript" src = "kpi-switcher.js"></script>
+		<style>
+			body
+			{
+				margin: 0 10%;
+			}
+			.hl
+			{
+				margin: 20px 4px;
+				text-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.15 );
+			}
+			.hl h1
+			{
+				font-size: 16px;
+				text-align: center;
+			}
+			.hl div
+			{
+				font-size: 13px;
+				text-align: center;
+				line-height: 22px;
+			}
+			.sb
+			{
+				margin-top: 10px;
+				padding: 10px 20%;
+				font-size: 11px;
+				text-align: center;
+				line-height: 20px;
+				border-top: 1px dashed rgba( 190, 190, 190 );
+			}
+			.stream
+			{
+				border: 1px solid rgb( 160, 160, 160 );
+				text-align: right;
+				font-size: 14px;
+				padding: 4px;
+				margin: 2px;
+			}
+			.calc-button
+			{
+				width: 100%;
+				height: 50px;
+				text-align: center;
+				vertical-align: middle;
+				border-top: 1px solid #fff;
+				border-left: 1px solid #fff;
+				border-right: 1px solid rgb( 160, 170, 180);
+				border-bottom: 1px solid rgb( 160, 170, 180);
+				background-color: rgb( 205, 215, 220 );
+				cursor: pointer;
+			}
+			.calc-button:hover
+			{
+				background-color: rgb( 210, 225, 232 );
+			}
+			.lbl
+			{
+				font-size: 12px;
+			}
+			.ibx
+			{
+				width: 90%;
+				padding: 4px;
+				border-radius: 8px;
+				border: 1px solid rgb( 160, 170, 180 );
+				box-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.04 );
+			}
+			.abk
+			{
+				height: 220px;
+				overflow: auto;
+				border-radius: 8px;
+				border: 1px solid rgb( 160, 170, 180 );
+				box-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.04 );
+			}
+			.addrbook-item
+			{
+				margin: 2px;
+				padding: 3px;
+				cursor: pointer;
+				font-size: 13px;
+				border-radius: 8px;
+				border: 1px solid #fff;
+			}
+			.addrbook-item:hover
+			{
+				border: 1px solid rgb( 160, 170, 180 );
+				background-color: rgb( 230, 240, 250 );
+				box-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.04 );
+			}
+			.sketch
+			{
+				margin: 2%;
+				width: 96%;
+				height: 96%;
+				border-radius: 20px;
+				border: 1px solid rgb( 180, 184, 188 );
+				box-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.04 );
+			}
+			.sheettab-table
+			{
+				border-right: 1px solid rgb( 160, 160, 160 );
+				border-bottom: 1px solid rgb( 160, 160, 160 );
+			}
+			.sheettab-table table
+			{
+				border-top: 1px solid rgb( 160, 160, 160 );
+				border-left: 1px solid rgb( 160, 160, 160 );
+				width: 100%;
+			}
+			.sheettab-table table th, .sheettab-table table td
+			{
+				border-right: 1px solid rgb( 160, 160, 160 );
+				border-bottom: 1px solid rgb( 160, 160, 160 );
+				padding: 4px;
+			}
+			.sheettab-table table th
+			{
+				background-color: rgb( 230, 235, 240 );
+				font-size: 13px;
+				text-align: left;
+			}
+			.sheettab-table table td
+			{
+				text-align: left;
+				font-size: 11px;
+			}
+			.my-tree
+			{
+				box-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.08 );
+				border: 1px solid rgb( 160, 164, 168 );
+				background-color: rgb( 240, 248, 254 );
+				/*min-height: 100px;
+				max-height: 200px;*/
+				height: 200px;
+				overflow: auto;
+				margin: 0 4px;
+			}
+			.my-tree .item, .my-tree .node
+			{
+				font-family: Arial;
+				font-size: 12px;
+				padding: 5px;
+				margin: 1px;
+			}
+			.my-tree .item:hover, .my-tree .node:hover
+			{
+				background-color: rgb( 220, 225, 235 );
+			}
+		</style>
+	</head>
+	<body>
+		<script>
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * Some free icons
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			const ico = "https://code-coach.de/sample-icons/";
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * The router is used to manage the different
+			 * document-pages
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			const vwport = kpi.router();
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * Create a document-view
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			const content = kpi.view();
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * The Main-Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			function pageMain()
+			{
+				// Reset views
+				content.clear();
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					// Create 3 frields and distribute
+					// them into own rows
+					content.rows( '100%', '100%', '100%' )
+				);
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( `KPI ${kpi.version} Demo` );
+				hline.setText( "Kurt's Programming Interface is a smart " + 
+								  "and easy single-page developing module " +
+								  "designed for JavaScript" );
+				// Create menu-list
+				const mainMenu = new kpi.list();
+				// Organize menu-list
+ 				mainMenu.begin();
+				mainMenu.item( "calc", "Calculator", () => vwport.goto('/calc') );
+				mainMenu.item( "adbk", "Address Book", () => vwport.goto('/addrbook') );
+				mainMenu.item( "draw", "Paint", () => vwport.goto('/paint') );
+				mainMenu.item( "shtt", "Table", () => vwport.goto('/sheettab') );
+				mainMenu.item( "mabd", "Menus & Bars Demo", () => vwport.goto('/mbdemo') );
+				mainMenu.item( "ctrl", "Controls Overview", () => vwport.goto('/controls') );
+				mainMenu.close();
+				// Create a panel for the bottom
+				const under = new kpi.panel();
+				// Set panel data
+				under.setClass( "sb" );
+				under.set( "Powered by Abdülaziz Kurt <br />abdkurt1982@gmail.com" );
+				// Set all components into the view-content
+				content.set( 0, hline.get() );
+				content.set( 1, mainMenu.get() );
+				content.set( 2, under.get() );
+				// Initialize event-handler of the mainMenu-component
+				mainMenu.init();
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * The Calculator-Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			let pc_display = "";
+			let pc_num_1 = "";
+			let pc_num_2 = "";
+			let pc_opr = 0;
+
+			function calcEnterDigit ( btn )
+			{
+				let res;
+				// *** //
+				switch ( kpi.tag(btn._id).innerHTML )
+				{
+					case 'AC':
+						kpi.tag(pc_display).innerHTML = "0";
+						pc_num_1 = "";
+						pc_num_2 = "";
+						pc_opr = 0;
+						break;
+					case '0': case '1': case '2': case '3': case '4':
+					case '5': case '6': case '7': case '8': case '9':
+						switch ( pc_opr )
+						{
+							case 0: pc_num_1 += kpi.tag(btn._id).innerHTML; kpi.tag(pc_display).innerHTML = pc_num_1; break;
+							default: pc_num_2 += kpi.tag(btn._id).innerHTML; kpi.tag(pc_display).innerHTML = pc_num_2; break;
+						}
+						break;
+					case ',':
+						switch ( pc_opr )
+						{
+							case 0: pc_num_1 += '.'; kpi.tag(pc_display).innerHTML = pc_num_1; break;
+							default: pc_num_2 += '.'; kpi.tag(pc_display).innerHTML = pc_num_2; break;
+						}
+						break;
+					case '+':
+						kpi.tag(pc_display).innerHTML += " +";
+						pc_opr = 1;
+						break;
+					case '-':
+						kpi.tag(pc_display).innerHTML += " -";
+						pc_opr = 2;
+						break;
+					case '*':
+						kpi.tag(pc_display).innerHTML += " *";
+						pc_opr = 3;
+						break;
+					case '/':
+						kpi.tag(pc_display).innerHTML += " /";
+						pc_opr = 4;
+						break;
+					case '=':
+						kpi.tag(pc_display).innerHTML = pc_num_1;
+						// *** //
+						switch ( pc_opr )
+						{
+							case 1: kpi.tag(pc_display).innerHTML += " + "; res = parseFloat(pc_num_1) + parseFloat(pc_num_2); break;
+							case 2: kpi.tag(pc_display).innerHTML += " - "; res = parseFloat(pc_num_1) - parseFloat(pc_num_2); break;
+							case 3: kpi.tag(pc_display).innerHTML += " * "; res = parseFloat(pc_num_1) * parseFloat(pc_num_2); break;
+							case 4: kpi.tag(pc_display).innerHTML += " / "; res = parseFloat(pc_num_1) / parseFloat(pc_num_2); break;
+						}
+						// *** //
+						kpi.tag(pc_display).innerHTML += pc_num_2 + " = " + res.toString();
+						// *** //
+						pc_num_1 = res.toString();
+						pc_num_2 = "";
+						pc_opr = 0;
+						// *** //
+						break;
+				}
+			}
+
+			function pageCalc()
+			{
+				// Reset views
+				content.clear();
+				// Reset calculator specific global declarations
+				pc_num_1 = "";
+				pc_num_2 = "";
+				pc_opr = 0;
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					// Create several fields and 
+					// distribute them into the
+					// document and wrap them 
+					// to order it all responsively
+					content.wrap
+					(
+						'100%', '100%', '100%',
+						'25%', '25%', '25%', '25%',
+						'25%', '25%', '25%', '25%',
+						'25%', '25%', '25%', '25%',
+						'25%', '25%', '25%', '25%'
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => vwport.goto('/') );
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( "Calculator Demo" );
+				hline.setText( goback.get() );
+				// Create a panel for the calculator digits-view
+				const stream = new kpi.panel();
+				// *** //
+				stream.setClass( "stream" );
+				stream.set( "0" );
+				// *** //
+				pc_display = stream._id;
+				// Digits
+				const b07 = new kpi.button(); b07.setClass("calc-button"); b07.create( "7", () => calcEnterDigit(b07) );
+				const b08 = new kpi.button(); b08.setClass("calc-button"); b08.create( "8", () => calcEnterDigit(b08) );
+				const b09 = new kpi.button(); b09.setClass("calc-button"); b09.create( "9", () => calcEnterDigit(b09) );
+				const b04 = new kpi.button(); b04.setClass("calc-button"); b04.create( "4", () => calcEnterDigit(b04) );
+				const b05 = new kpi.button(); b05.setClass("calc-button"); b05.create( "5", () => calcEnterDigit(b05) );
+				const b06 = new kpi.button(); b06.setClass("calc-button"); b06.create( "6", () => calcEnterDigit(b06) );
+				const b01 = new kpi.button(); b01.setClass("calc-button"); b01.create( "1", () => calcEnterDigit(b01) );
+				const b02 = new kpi.button(); b02.setClass("calc-button"); b02.create( "2", () => calcEnterDigit(b02) );
+				const b03 = new kpi.button(); b03.setClass("calc-button"); b03.create( "3", () => calcEnterDigit(b03) );
+				const b00 = new kpi.button(); b00.setClass("calc-button"); b00.create( "0", () => calcEnterDigit(b00) );
+				const bcm = new kpi.button(); bcm.setClass("calc-button"); bcm.create( ",", () => calcEnterDigit(bcm) );
+				const bac = new kpi.button(); bac.setClass("calc-button"); bac.create( "AC", ()=> calcEnterDigit(bac) );
+				const bad = new kpi.button(); bad.setClass("calc-button"); bad.create( "+", () => calcEnterDigit(bad) );
+				const bsu = new kpi.button(); bsu.setClass("calc-button"); bsu.create( "-", () => calcEnterDigit(bsu) );
+				const bmu = new kpi.button(); bmu.setClass("calc-button"); bmu.create( "*", () => calcEnterDigit(bmu) );
+				const bdi = new kpi.button(); bdi.setClass("calc-button"); bdi.create( "/", () => calcEnterDigit(bdi) );
+				const bre = new kpi.button(); bre.setClass("calc-button"); bre.create( "=", () => calcEnterDigit(bre) );
+				// *** //
+				content.set(  0, hline.get() );
+				content.set(  1, stream.get() );
+				content.set(  2, bac.get() );
+				content.set(  3, b07.get() );
+				content.set(  4, b08.get() );
+				content.set(  5, b09.get() );
+				content.set(  6, bad.get() );
+				content.set(  7, b04.get() );
+				content.set(  8, b05.get() );
+				content.set(  9, b06.get() );
+				content.set( 10, bsu.get() );
+				content.set( 11, b01.get() );
+				content.set( 12, b02.get() );
+				content.set( 13, b03.get() );
+				content.set( 14, bmu.get() );
+				content.set( 15, b00.get() );
+				content.set( 16, bcm.get() );
+				content.set( 17, bre.get() );
+				content.set( 18, bdi.get() );
+				// Initialize event-handlers
+				goback.init();
+				b00.init(); b01.init(); b02.init(); b03.init(); b04.init();
+				b05.init(); b06.init(); b07.init(); b08.init(); b09.init();
+				bcm.init(); bad.init(); bsu.init(); bmu.init(); bdi.init();
+				bre.init(); bac.init(); 
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * The Address-Book-Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			if ( kpi.ses.getItem( "addrbook.count" ) == "" )
+				kpi.ses.setItem( "addrbook.count", "0" );
+
+			function pageAddr()
+			{
+				// Reset views
+				content.clear();
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					content.wrap
+					(
+						'100%', '50%', '50%'
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => vwport.goto('/') );
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( "Address Book Demo" );
+				hline.setText( goback.get() );
+				// Formular
+				const text1 = new kpi.label();
+				const text2 = new kpi.label();
+				const text3 = new kpi.label();
+				const text4 = new kpi.label();
+				const inbx1 = new kpi.input();
+				const inbx2 = new kpi.input();
+				const inbx3 = new kpi.input();
+				const inbx4 = new kpi.input();
+				const buttn = new kpi.button();
+				const abook = new kpi.panel();
+				// *** //
+				abook.setClass( "abk" );
+				text1.setClass( "lbl" ); text1.create( "First-name:" );
+				text2.setClass( "lbl" ); text2.create( "Second-name:" );
+				text3.setClass( "lbl" ); text3.create( "Age:" );
+				text4.setClass( "lbl" ); text4.create( "Address:" );
+				// *** //
+				inbx1.setClass( "ibx" ); inbx1.create( "Your name..." );
+				inbx2.setClass( "ibx" ); inbx2.create( "Your second-name..." );
+				inbx3.setClass( "ibx" ); inbx3.create( "How old are you?" );
+				inbx4.setClass( "ibx" ); inbx4.create( "Where do you live?" );
+				// *** //
+				buttn.create( "Add", () => {
+					if ( !inbx1.attr.value )
+						alert( "Type your first-name" );
+					else if ( !inbx2.attr.value )
+						alert( "Type your second-name" );
+					else if ( !inbx3.attr.value )
+						alert( "Type your age" );
+					else if ( !inbx4.attr.value )
+						alert( "Type your address" );
+					else
+					{
+						let cnt = parseInt(kpi.ses.getItem( "addrbook.count" ));
+						// *** //
+						kpi.ses.setItem( `addrbook.item.fn.${cnt}`, inbx1.attr.value );
+						kpi.ses.setItem( `addrbook.item.nn.${cnt}`, inbx2.attr.value );
+						kpi.ses.setItem( `addrbook.item.ag.${cnt}`, inbx3.attr.value );
+						kpi.ses.setItem( `addrbook.item.ln.${cnt}`, inbx4.attr.value );
+						// *** //
+						cnt++;
+						// *** //
+						kpi.ses.setItem( "addrbook.count", cnt );
+						// *** //
+						abook.attr.innerHTML = "";
+						// *** //
+						for ( let e = 0; e < cnt; e++ )
+						{
+							let fn = kpi.ses.getItem( `addrbook.item.fn.${e}` );
+							let nn = kpi.ses.getItem( `addrbook.item.nn.${e}` );
+							let ag = kpi.ses.getItem( `addrbook.item.ag.${e}` );
+							let ln = kpi.ses.getItem( `addrbook.item.ln.${e}` );
+							abook.attr.innerHTML += `<div class = "addrbook-item">${fn} ${nn} (${ag}), ${ln}</div>`;
+						}
+						// *** //
+						inbx1.attr.value = "";
+						inbx2.attr.value = "";
+						inbx3.attr.value = "";
+						inbx4.attr.value = "";	
+					}
+				} );
+				// Fill the content
+				content.set( 0, hline.get() );
+				content.set( 1, text1.get() + '<br />' );
+				content.put( 1, inbx1.get() + '<br />' );
+				content.put( 1, text2.get() + '<br />' );
+				content.put( 1, inbx2.get() + '<br />' );
+				content.put( 1, text3.get() + '<br />' );
+				content.put( 1, inbx3.get() + '<br />' );
+				content.put( 1, text4.get() + '<br />' );
+				content.put( 1, inbx4.get() + '<br />' );
+				content.put( 1, '<br />' + buttn.get() + '<br />' );
+				content.set( 2, abook.get() );
+				// Initialize event-handlers
+				goback.init();
+				buttn.init();
+				inbx1.init();
+				inbx2.init();
+				inbx3.init();
+				inbx4.init();
+				abook.init();
+				// *** //
+				let cnt = kpi.ses.getItem( "addrbook.count" );
+				// *** //
+				abook.attr.innerHTML = "";
+				// *** //
+				for ( let e = 0; e < cnt; e++ )
+				{
+					let fn = kpi.ses.getItem( `addrbook.item.fn.${e}` );
+					let nn = kpi.ses.getItem( `addrbook.item.nn.${e}` );
+					let ag = kpi.ses.getItem( `addrbook.item.ag.${e}` );
+					let ln = kpi.ses.getItem( `addrbook.item.ln.${e}` );
+					abook.attr.innerHTML += `<div class = "addrbook-item">${fn} ${nn} (${ag}), ${ln}</div>`;
+				}
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * The Draw-Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			let currentPaint = null;
+
+			function pageDraw()
+			{
+				// Clear currentPaint
+				currentPaint = null;
+				// Reset views
+				content.clear();
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					content.tile
+					(
+						{ model : 'cols', fields: [ '100%' ] },
+						{ model : 'cols', fields: [ '80px', { size: '100%', overFlow: 'auto' }, '20px', '20px', '20px' ] }
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => vwport.goto('/') );
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( "Paint Demo" );
+				hline.setText( goback.get() );
+				// *** //
+				const sketch = new kpi.graphics.sketch;
+				// *** //
+				const tool1 = new kpi.button();
+				const tool2 = new kpi.button();
+				const tool3 = new kpi.button();
+				const tool4 = new kpi.button();
+				const tool5 = new kpi.button();
+				const tool6 = new kpi.button();
+				const tool7 = new kpi.button();
+				const tool8 = new kpi.button();
+				// *** //
+				const canvs = new kpi.canvas();
+				// *** //
+				const color = [];
+				// *** //
+				for ( let c = 0; c < 24; c++ )
+				{
+					let item = new kpi.colorShape();
+					item.setClass( "calc-button" );
+					let r = Math.floor(Math.random() * 256);
+					let g = Math.floor(Math.random() * 256);
+					let b = Math.floor(Math.random() * 256);
+					item.create( `rgb( ${r}, ${b}, ${g} )`, () => { sketch.color = `rgb( ${r}, ${b}, ${g} )` } );
+					color.push( item );
+				}
+				// *** //
+				const switchTool = () => {
+					tool1.attr.style.backgroundColor = "";
+					tool2.attr.style.backgroundColor = "";
+					tool3.attr.style.backgroundColor = "";
+					tool4.attr.style.backgroundColor = "";
+					tool5.attr.style.backgroundColor = "";
+					tool6.attr.style.backgroundColor = "";
+					tool7.attr.style.backgroundColor = "";
+					tool8.attr.style.backgroundColor = "";
+					// *** //
+					switch ( sketch.mode )
+					{
+						case 0: tool1.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 1: tool2.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 2: tool3.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 3: tool4.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 4: tool5.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 5: tool6.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 6: tool7.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+						case 7: tool8.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
+					}
+				}
+				// *** //
+				tool1.setClass( "calc-button" ); tool1.create( "Mouse", () => { sketch.mode = 0; switchTool(); } );
+				tool2.setClass( "calc-button" ); tool2.create( "Pen", () => { sketch.mode = 1; switchTool(); } );
+				tool3.setClass( "calc-button" ); tool3.create( "Brush", () => { sketch.mode = 2; switchTool(); } );
+				tool4.setClass( "calc-button" ); tool4.create( "Line", () => { sketch.mode = 3; switchTool(); } );
+				tool5.setClass( "calc-button" ); tool5.create( "Quader", () => { sketch.mode = 4; switchTool(); } );
+				tool6.setClass( "calc-button" ); tool6.create( "Frame", () => { sketch.mode = 5; switchTool(); } );
+				tool7.setClass( "calc-button" ); tool7.create( "Circle1", () => { sketch.mode = 6; switchTool(); } );
+				tool8.setClass( "calc-button" ); tool8.create( "Circle2", () => { sketch.mode = 7; switchTool(); } );
+				// *** //
+				canvs.setClass( "sketch" ); canvs.create( [
+					{ event : 'mousedown', callback : () => { sketch.start() } },
+					{ event : 'mouseup', callback : () => { sketch.strip(); sketch.getPNG(); } },
+					{ event : 'mousemove', callback : () => {
+						switch ( sketch.mode )
+						{
+							case 1:
+								// Pen
+								sketch.box( sketch.cx, sketch.cy, sketch.cx + 1, sketch.cy + 1, sketch.color );
+								break;
+							case 2:
+								// Brush
+								sketch.box( sketch.cx, sketch.cy, sketch.cx + 1, sketch.cy + 1, sketch.color );
+								sketch.box( sketch.cx, sketch.cy, sketch.cx - 1, sketch.cy - 1, sketch.color );
+								sketch.box( sketch.cx, sketch.cy, sketch.cx - 1, sketch.cy + 1, sketch.color );
+								sketch.box( sketch.cx, sketch.cy, sketch.cx + 1, sketch.cy - 1, sketch.color );
+								break;
+							case 3:
+								// Line
+								sketch.clear();
+								if ( sketch.getImage() != null )
+									sketch.image( sketch.getImage() );
+								sketch.line( sketch.fx, sketch.fy, sketch.cx, sketch.cy, sketch.color );
+								break;
+							case 4:
+								// Quader
+								sketch.clear();
+								if ( sketch.getImage() != null )
+									sketch.image( sketch.getImage() );
+								sketch.box( sketch.fx, sketch.fy, sketch.cx, sketch.cy, sketch.color );
+								break;
+							case 5:
+								// Frame
+								sketch.clear();
+								if ( sketch.getImage() != null )
+									sketch.image( sketch.getImage() );
+								sketch.frame( sketch.fx, sketch.fy, sketch.cx, sketch.cy, sketch.color );
+								break;
+							case 6:
+								// Filled Circle/Ellipse
+								sketch.clear();
+								if ( sketch.getImage() != null )
+									sketch.image( sketch.getImage() );
+								sketch.circle( sketch.fx, sketch.fy, sketch.cx, sketch.cy, sketch.color );
+								break;
+							case 7:
+								// Framed Circle/Ellipse
+								sketch.clear();
+								if ( sketch.getImage() != null )
+									sketch.image( sketch.getImage() );
+								sketch.circularFrame( sketch.fx, sketch.fy, sketch.cx, sketch.cy, sketch.color );
+								break;
+						}
+					} }
+				] );
+				// Fill the content
+				content.set( 0, hline.get() );
+				content.set( 1, tool1.get() + '<br />' );
+				content.put( 1, tool2.get() + '<br />' );
+				content.put( 1, tool3.get() + '<br />' );
+				content.put( 1, tool4.get() + '<br />' );
+				content.put( 1, tool5.get() + '<br />' );
+				content.put( 1, tool6.get() + '<br />' );
+				content.put( 1, tool7.get() + '<br />' );
+				content.put( 1, tool8.get() + '<br />' );
+				content.set( 2, canvs.get() );
+				// *** //
+				for ( let p = 0; p < 8; p++ )
+				{
+					content.put( 3, color[p +  0].get() );
+					content.put( 4, color[p +  8].get() );
+					content.put( 5, color[p + 16].get() );
+				}
+				// Initialize event-handlers
+				goback.init();
+				tool1.init();
+				tool2.init();
+				tool3.init();
+				tool4.init();
+				tool5.init();
+				tool6.init();
+				tool7.init();
+				tool8.init();
+				// *** //
+				canvs.init();
+				// *** //
+				sketch.init( canvs._id );
+				// *** //
+				for ( let p = 0; p < color.length; p++ )
+					color[p].init();
+				// *** //
+				sketch.mode = 0;
+				switchTool();
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * SheetTab-Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			function pageSheetTab()
+			{
+				// Reset views
+				content.clear();
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					content.tile
+					(
+						{ model : 'rows', fields: [ '100%' ] },
+						{ model : 'rows', fields: [ { size: '100%', overFlow: 'auto' } ] }
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => vwport.goto('/') );
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( "Table Demo" );
+				hline.setText( goback.get() );
+				// Table
+				const table = new kpi.sheet();
+				// *** //
+				let cnt = kpi.ses.getItem( "addrbook.count" );
+				// *** //
+				table.setClass( "sheettab-table" );
+				table.create( 1, 4, parseInt(cnt), () => {} );
+				// Fill the content
+				content.set( 0, hline.get() );
+				content.set( 1, table.get() );
+ 				// Fill the cells
+				table.cell( 0, 0 ).innerHTML = "First-name";
+				table.cell( 1, 0 ).innerHTML = "Second-name";
+				table.cell( 2, 0 ).innerHTML = "Age";
+				table.cell( 3, 0 ).innerHTML = "Address";
+				// *** //
+				for ( let p = 0; p < cnt - 1; p++ )
+				{
+					let fn = kpi.ses.getItem( `addrbook.item.fn.${p}` );
+					let nn = kpi.ses.getItem( `addrbook.item.nn.${p}` );
+					let ag = kpi.ses.getItem( `addrbook.item.ag.${p}` );
+					let ln = kpi.ses.getItem( `addrbook.item.ln.${p}` );
+					// *** //
+					switch( p )
+					{
+						case 1: case 3: case 5: case 7: case 9:
+						case 11: case 13: case 14: case 15:
+						case 17: case 19: case 21: case 23:
+							table.cell( 0, 1 + p ).style.backgroundColor = 'rgb( 241, 245, 249 )';
+							table.cell( 1, 1 + p ).style.backgroundColor = 'rgb( 241, 245, 249 )';
+							table.cell( 2, 1 + p ).style.backgroundColor = 'rgb( 241, 245, 249 )';
+							table.cell( 3, 1 + p ).style.backgroundColor = 'rgb( 241, 245, 249 )';
+							// *** //
+							break;
+					}
+					// *** //
+					table.cell( 0, 1 + p ).innerHTML = fn;
+					table.cell( 1, 1 + p ).innerHTML = nn;
+					table.cell( 2, 1 + p ).innerHTML = ag;
+					table.cell( 3, 1 + p ).innerHTML = ln;
+				}
+				// Initialize event-handlers
+				goback.init();
+				table.init();
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * Menus & Bars - Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			function pageMenusNBars()
+			{
+				// Reset views
+				content.clear();
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					content.tile
+					(
+						{ model : 'rows', fields: [ '100%', '100%', '100%', '100%', '100%', '100%', '100%', '100%', '100%' ] },
+						{ model : 'cols', fields: [ '100%', '100%', '100%', '100%', '100%', '100%' ] }
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => vwport.goto('/') );
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( "Menus & Bars Demo" );
+				hline.setText( goback.get() );
+				// Create Toolbar 1
+				const tlbar1 = new kpi.toolBar();
+				// *** //
+				tlbar1.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar1.item( 'a', 'Cut', '', 'default-text-only' );
+				tlbar1.item( 'b', 'Copy', '', 'default-text-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard' },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI' }
+				] );
+				// *** //
+				tlbar1.separator();
+				tlbar1.item( 'c', 'Paste', '', 'default-text-only' );
+				tlbar1.separator();
+				tlbar1.item( 'd', 'Select&nbsp;All', '', 'default-text-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All' },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block' },
+					{ key : 'b.2', text : 'Select Sub-Block' },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line' }
+				] );
+				// *** //
+				tlbar1.close();
+				// Create Toolbar 2
+				const tlbar2 = new kpi.toolBar();
+				// *** //
+				tlbar2.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar2.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-only' );
+				tlbar2.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar2.separator();
+				tlbar2.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-only' );
+				tlbar2.separator();
+				tlbar2.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar2.close();
+				// Create Toolbar 3
+				const tlbar3 = new kpi.toolBar();
+				// *** //
+				tlbar3.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar3.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-top' );
+				tlbar3.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-top', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar3.separator();
+				tlbar3.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-top' );
+				tlbar3.separator();
+				tlbar3.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-top', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar3.close();
+				// Create Toolbar 4
+				const tlbar4 = new kpi.toolBar();
+				// *** //
+				tlbar4.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar4.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-bottom' );
+				tlbar4.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-bottom', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar4.separator();
+				tlbar4.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-bottom' );
+				tlbar4.separator();
+				tlbar4.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-bottom', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar4.close();
+				// Create Toolbar 5
+				const tlbar5 = new kpi.toolBar();
+				// *** //
+				tlbar5.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar5.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-left' );
+				tlbar5.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-left', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar5.separator();
+				tlbar5.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-left' );
+				tlbar5.separator();
+				tlbar5.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-left', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar5.close();
+				// Create Toolbar 6
+				const tlbar6 = new kpi.toolBar();
+				// *** //
+				tlbar6.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar6.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-right' );
+				tlbar6.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-right', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar6.separator();
+				tlbar6.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-right' );
+				tlbar6.separator();
+				tlbar6.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-right', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar6.close();
+				// Create Toolbar 7
+				const tlbar7 = new kpi.toolBar();
+				// *** //
+				tlbar7.begin( 'v', (e, k) => {console.log(k)} );
+				tlbar7.item( 'a', 'Cut', '', 'default-text-only' );
+				tlbar7.item( 'b', 'Copy', '', 'default-text-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard' },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI' }
+				] );
+				// *** //
+				tlbar7.separator();
+				tlbar7.item( 'c', 'Paste', '', 'default-text-only' );
+				tlbar7.separator();
+				tlbar7.item( 'd', 'Select&nbsp;All', '', 'default-text-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All' },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block' },
+					{ key : 'b.2', text : 'Select Sub-Block' },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line' }
+				] );
+				// *** //
+				tlbar7.close();
+				// Create Toolbar 8
+				const tlbar8 = new kpi.toolBar();
+				// *** //
+				tlbar8.begin( 'v', (e, k) => {console.log(k)} );
+				tlbar8.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-only' );
+				tlbar8.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar8.separator();
+				tlbar8.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-only' );
+				tlbar8.separator();
+				tlbar8.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-only', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar8.close();
+				// Create Toolbar 9
+				const tlbar9 = new kpi.toolBar();
+				// *** //
+				tlbar9.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar9.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-top' );
+				tlbar9.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-top', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar9.separator();
+				tlbar9.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-top' );
+				tlbar9.separator();
+				tlbar9.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-top', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar9.close();
+				// Create Toolbar 10
+				const tlbar10 = new kpi.toolBar();
+				// *** //
+				tlbar10.begin( 'v', (e, k) => {console.log(k)} );
+				tlbar10.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-bottom' );
+				tlbar10.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-bottom', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar10.separator();
+				tlbar10.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-bottom' );
+				tlbar10.separator();
+				tlbar10.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-bottom', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar10.close();
+				// Create Toolbar 11
+				const tlbar11 = new kpi.toolBar();
+				// *** //
+				tlbar11.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar11.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-left' );
+				tlbar11.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-left', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar11.separator();
+				tlbar11.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-left' );
+				tlbar11.separator();
+				tlbar11.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-left', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar11.close();
+				// Create Toolbar 12
+				const tlbar12 = new kpi.toolBar();
+				// *** //
+				tlbar12.begin( 'h', (e, k) => {console.log(k)} );
+				tlbar12.item( 'a', 'Cut', `${ico}118942_folder_open_icon.png`, 'default-icon-right' );
+				tlbar12.item( 'b', 'Copy', `${ico}118916_guardar_save_document_icon.png`, 'default-icon-right', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '100px' },
+					{ key : 'a.0', text : 'Copy from Clipboard', icon : `${ico}15512_copy_documents_duplicate_files_note_icon.png` },
+					{ type : 'separator' },
+					{ key : 'a.1', text : 'Copy from URI', icon : `${ico}259302_pipeline_management_aws_deployment_copy_icon.png` }
+				] );
+				// *** //
+				tlbar12.separator();
+				tlbar12.item( 'c', 'Paste', `${ico}285657_floppy_guardar_save_icon.png`, 'default-icon-right' );
+				tlbar12.separator();
+				tlbar12.item( 'd', 'Select&nbsp;All', `${ico}85334_file_open_icon.png`, 'default-icon-right', [
+					{ type : 'default', overFlow : 'auto', minWidth : '100px', maxHeight : '120px' },
+					{ key : 'b.0', text : 'Select All', icon : `${ico}32380_contacts_addressbook_contact us_mail_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.1', text : 'Select Block', icon : `${ico}32390_bulb_chat_talk_icon.png` },
+					{ key : 'b.2', text : 'Select Sub-Block', icon : `${ico}32383_app_application_design_icon.png` },
+					{ type : 'separator' },
+					{ key : 'b.3', text : 'Select Line', icon : `${ico}299053_computer_icon.png` }
+				] );
+				// *** //
+				tlbar12.close();
+				// Left Floating SideBar
+				const lsbar = new kpi.lSideBar();
+				// *** //
+				lsbar.create();
+				// *** //
+				kpi.into.body.add( lsbar.get() );
+				// Right Floating SideBar
+				const rsbar = new kpi.rSideBar();
+				// *** //
+				rsbar.create();
+				// *** //
+				kpi.into.body.add( rsbar.get() );
+				// Fill the content
+				content.set( 0, hline.get() );
+				// 1 ist für die Menüleiste reserivert
+				content.set( 3, tlbar1.get() );
+				content.set( 4, tlbar2.get() );
+				content.set( 5, tlbar3.get() );
+				content.set( 6, tlbar4.get() );
+				content.set( 7, tlbar5.get() );
+				content.set( 8, tlbar6.get() );
+				content.set( 9, tlbar7.get() );
+				content.set(10, tlbar8.get() );
+				content.set(11, tlbar9.get() );
+				content.set(12,tlbar10.get() );
+				content.set(13,tlbar11.get() );
+				content.set(14,tlbar12.get() );
+				// Initialize event-handlers
+				goback.init();
+				tlbar1.init();
+				tlbar2.init();
+				tlbar3.init();
+				tlbar4.init();
+				tlbar5.init();
+				tlbar6.init();
+				tlbar7.init();
+				tlbar8.init();
+				tlbar9.init();
+				tlbar10.init();
+				tlbar11.init();
+				tlbar12.init();
+				lsbar.init();
+				rsbar.init();
+				// *** //
+				lsbar.attr[1].innerHTML = "Left Sidebar";
+				lsbar.attr[2].innerHTML = "Content of the client-area is a panel, where you can add elements and text or other components<br><br><br><br><br><br><br><br><br><br><br>Another text somewhere at the bottom<br><br>";
+				// *** //
+				rsbar.attr[1].innerHTML = "Right Sidebar";
+				rsbar.attr[2].innerHTML = "Content of the client-area is a panel, where you can add elements and text or other components<br><br><br><br><br><br><br><br><br><br><br>Another text somewhere at the bottom<br><br>";
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * Controls-Page
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			function pageControls()
+			{
+				// Reset views
+				content.clear();
+				// Write into the body-element
+				kpi.into.body.set
+				(
+					content.tile
+					(
+						{ model : 'rows', fields: [ '100%' ] },
+						{ model : 'cols', fields: [ '25%', '25%', '25%', '25%' ] },
+						{ model : 'cols', fields: [ '25%', '25%', '25%', '25%' ] }
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => vwport.goto('/') );
+				// Create a head-line
+				const hline = new kpi.headLine();
+				// Set head-line data
+				hline.setClass( "hl" );
+				hline.setTitle( "Address Book Demo" );
+				hline.setText( goback.get() );
+				// Tree 1
+				const myTree = new kpi.tree();
+				// *** //
+				myTree.setClass("my-tree");
+				myTree.begin();
+					myTree.node( "country", "World Countries" );
+						myTree.node( "america", "American Countries" );
+							myTree.node( "a.north", "Northern Countries" );
+								myTree.item( "ca", "Canada" );
+								myTree.item( "us", "USA" );
+							myTree.ends();
+							myTree.node( "a.middle", "Middle Countries" );
+								myTree.item( "mx", "Mexico" );
+								myTree.item( "pa", "Panama" );
+								myTree.item( "bz", "Belize" );
+							myTree.ends();
+							myTree.node( "a.south", "Southern Countries" );
+								myTree.item( "ve", "Venezuela" );
+								myTree.item( "eq", "Equador" );
+								myTree.item( "cm", "Colombia" );
+								myTree.item( "ce", "Chile" );
+								myTree.item( "pu", "Peru" );
+								myTree.item( "ag", "Argentina" );
+								myTree.item( "ba", "Brasil" );
+							myTree.ends();
+						myTree.ends();
+						myTree.node( "asia", "Asian Countries" );
+							myTree.item( "ru", "Russia" );
+							myTree.item( "in", "India" );
+							myTree.item( "cn", "China" );
+						myTree.ends();
+						myTree.node( "africa", "African Countries" );
+							myTree.item( "al", "Algeria" );
+							myTree.item( "eg", "Egypt" );
+							myTree.item( "mc", "Marocco" );
+							myTree.item( "ki", "Kenia" );
+							myTree.item( "sa", "South Africa" );
+						myTree.ends();
+						myTree.node( "austr", "Australian Countries" );
+							myTree.item( "au", "Australia" );
+							myTree.item( "nz", "New Zealand" );
+						myTree.ends();
+						myTree.node( "europe", "European Countries" );
+							myTree.item( "be", "Beglium" );
+							myTree.item( "nl", "Netherlands" );
+							myTree.item( "de", "Germany" );
+							myTree.item( "at", "Austria" );
+							myTree.item( "lu", "Luxembourg" );
+							myTree.item( "pl", "Poland" );
+							myTree.item( "cr", "Chech Republich" );
+						myTree.ends();
+					myTree.ends();
+					myTree.node( "capitols", "World Capitols" );
+						myTree.item( "capitol.0", "Washington D.C., USA" );
+						myTree.item( "capitol.1", "Ottawa, Canada" );
+						myTree.item( "capitol.2", "Canberra, Australia" );
+						myTree.item( "capitol.3", "London, England" );
+						myTree.item( "capitol.4", "Paris, France" );
+						myTree.item( "capitol.5", "Berlin, Germany" );
+						myTree.item( "capitol.6", "Ankara, Turkey" );
+						myTree.item( "capitol.7", "Moscau, Russia" );
+						myTree.item( "capitol.8", "Tokio, Japan" );
+						myTree.item( "capitol.9", "Seoul, North Korea" );
+					myTree.ends();
+				myTree.close();
+				// Tree 2
+				const myTre2 = new kpi.tree();
+				// *** //
+				myTre2.setClass("my-tree");
+				myTre2.begin();
+					myTre2.node( "country", "World Countries", `${ico}15512_copy_documents_duplicate_files_note_icon.png` );
+						myTre2.node( "america", "American Countries" );
+							myTre2.node( "a.north", "Northern Countries" );
+								myTre2.item( "ca", "Canada" );
+								myTre2.item( "us", "USA" );
+							myTre2.ends();
+							myTre2.node( "a.middle", "Middle Countries" );
+								myTre2.item( "mx", "Mexico" );
+								myTre2.item( "pa", "Panama" );
+								myTre2.item( "bz", "Belize" );
+							myTre2.ends();
+							myTre2.node( "a.south", "Southern Countries" );
+								myTre2.item( "ve", "Venezuela" );
+								myTre2.item( "eq", "Equador" );
+								myTre2.item( "cm", "Colombia" );
+								myTre2.item( "ce", "Chile" );
+								myTre2.item( "pu", "Peru" );
+								myTre2.item( "ag", "Argentina" );
+								myTre2.item( "ba", "Brasil" );
+							myTre2.ends();
+						myTre2.ends();
+						myTre2.node( "asia", "Asian Countries" );
+							myTre2.item( "ru", "Russia" );
+							myTre2.item( "in", "India" );
+							myTre2.item( "cn", "China" );
+						myTre2.ends();
+						myTre2.node( "africa", "African Countries" );
+							myTre2.item( "al", "Algeria" );
+							myTre2.item( "eg", "Egypt" );
+							myTre2.item( "mc", "Marocco" );
+							myTre2.item( "ki", "Kenia" );
+							myTre2.item( "sa", "South Africa" );
+						myTre2.ends();
+						myTre2.node( "austr", "Australian Countries" );
+							myTre2.item( "au", "Australia" );
+							myTre2.item( "nz", "New Zealand" );
+						myTre2.ends();
+						myTre2.node( "europe", "European Countries" );
+							myTre2.item( "be", "Beglium" );
+							myTre2.item( "nl", "Netherlands" );
+							myTre2.item( "de", "Germany" );
+							myTre2.item( "at", "Austria" );
+							myTre2.item( "lu", "Luxembourg" );
+							myTre2.item( "pl", "Poland" );
+							myTre2.item( "cr", "Chech Republich" );
+						myTre2.ends();
+					myTre2.ends();
+					myTre2.node( "capitols", "World Capitols", `${ico}15512_copy_documents_duplicate_files_note_icon.png` );
+						myTre2.item( "capitol.0", "Washington D.C., USA" );
+						myTre2.item( "capitol.1", "Ottawa, Canada" );
+						myTre2.item( "capitol.2", "Canberra, Australia" );
+						myTre2.item( "capitol.3", "London, England" );
+						myTre2.item( "capitol.4", "Paris, France" );
+						myTre2.item( "capitol.5", "Berlin, Germany" );
+						myTre2.item( "capitol.6", "Ankara, Turkey" );
+						myTre2.item( "capitol.7", "Moscau, Russia" );
+						myTre2.item( "capitol.8", "Tokio, Japan" );
+						myTre2.item( "capitol.9", "Seoul, North Korea" );
+					myTre2.ends();
+				myTre2.close();
+				// Editable ComboBox
+				const eCombo = new kpi.comboInput();
+				// *** //
+				eCombo.create( [], "Type something", "", () => {} );
+				// ReadOnly ComboBox
+				const rCombo = new kpi.combo();
+				// *** //
+				rCombo.create( [], "Type something", "", () => {} );
+				// Switcher
+				const shifter = new kpi_switcher();
+				// *** //
+				shifter.create();
+				// Fill the content
+				content.set( 0, hline.get() );
+				content.set( 1, myTree.get() );
+				content.set( 2, myTre2.get() );
+				content.set( 3, eCombo.get() + '<br>' + rCombo.get() + '<br>' + shifter.get() ); 
+				// Initialize event-handlers
+				goback.init();
+				myTree.init();
+				myTre2.init();
+				eCombo.init();
+				rCombo.init();
+				shifter.init();
+			}
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * Prepair routes
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			vwport.init
+			(
+				{ path: '/', page: pageMain },
+				{ path: '/calc', page: pageCalc },
+				{ path: '/addrbook', page: pageAddr },
+				{ path: '/paint', page: pageDraw },
+				{ path: '/sheettab', page: pageSheetTab },
+				{ path: '/mbdemo', page: pageMenusNBars },
+				{ path: '/controls', page: pageControls }
+			);
+
+			/* * * * * * * * * * * * * * * * * * * * * * * * * *
+			 * Goto the home document
+			 * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+			vwport.goto("/");
+
+		</script>
+	</body>
+</html>
