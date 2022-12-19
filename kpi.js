@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Kurt's Programming Interface
- * Version 1.0.3.9 (Alpha Stadium)
+ * Version 1.0.4.0 (Alpha Stadium)
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Author: Abduelaziz Kurt
  * E-Mail: abdkurt1982@gmail.com
@@ -14,11 +14,19 @@
 
 let __kpi_temp_counter = 0; // Used to increase component indices
 
-let __kip_hide_popups = [];
-let __kip_hide_popupi = '';
-let __kip_z_order_idx = 1000;
+let __kpi_hide_popups = [];
+let __kpi_hide_popupi = '';
+let __kpi_z_order_idx = 1000;
 
-function __kpi_disp_swi () {
+let __kpi_collected_component_instances = [];
+
+let __kpi_component_driven_stylesheets = [];
+let __kpi_component_driven_ss_oppcheck = [];
+
+const __kpi_installed_units = [];
+
+function __kpi_disp_swi ()
+{
 	for ( let e of arguments )
 	{
 		const el = document.getElementById(e);
@@ -34,6 +42,485 @@ function __kpi_disp_swi () {
 	}
 }
 
+async function __kpi_parse_component ( item, cpnt, arry, next, from, till, code, modifier, cbout, evelCode )
+{
+	await fetch(item.source).
+	then(async (code) => {
+		return await code.text().then(
+			(text) => {
+				// *** //
+				let temp = "";
+				let newc = [];
+				const comp = [];
+				// *** //
+				for ( let pntr = 0; pntr < text.length; pntr++ )
+				{
+					switch ( text[pntr] )
+					{
+						case '<': case '>': case '%': case '{': case '}': 
+						case '"': case '`': case '\'': case '=':
+						case ' ': case '\t': case '\n': case '\r':
+							if ( temp )
+								comp.push( temp );
+							// *** //
+							temp = "";
+							// *** //
+							comp.push(text[pntr]);
+							// *** //
+							break;
+						default:
+							temp += text[pntr];
+							break;
+					}
+				}
+				// *** //
+				if ( temp )
+					comp.push( temp );
+				// *** //
+				temp = "";
+				// *** //
+				newc = [];
+				// *** //
+				for ( let pntr = 0; pntr < comp.length; pntr++ )
+				{
+					if ( comp[pntr] === '%' && pntr + 1 < comp.length )
+					{
+						let sc = ""; let sg = false; let br = false;
+						// *** //
+						for ( let xpos = 0; xpos < cpnt.length; xpos++ )
+						{
+							if ( cpnt[xpos] === '=' && cpnt[xpos-1] === comp[pntr + 1] )
+							{
+								temp = "";
+								// *** //
+								for ( npos = xpos + 1; npos < cpnt.length; npos++ )
+								{
+									if ( sg === true && sc != cpnt[npos] )
+										temp += cpnt[npos];
+									// *** //
+									switch ( cpnt[npos] )
+									{
+										case '"':
+											if ( sg === false )
+											{
+												sg = true;
+												sc = cpnt[npos];
+											}
+											else if ( sg === true && sc === cpnt[npos] )
+											{
+												sg = false; br = true;
+											}
+											break;
+										case '`':
+											if ( sg === false )
+											{
+												sg = true;
+												sc = cpnt[npos];
+											}
+											else if ( sg === true && sc === cpnt[npos] )
+											{
+												sg = false; br = true;
+											}
+											break;
+										case '\'':
+											if ( sg === false )
+											{
+												sg = true;
+												sc = cpnt[npos];
+											}
+											else if ( sg === true && sc === cpnt[npos] )
+											{
+												sg = false; br = true;
+											}
+											break;
+									}
+									// *** //
+									if (  br == true )
+										break;
+								}
+console.log( cpnt[xpos-1] + " >< " + temp );
+								comp[pntr] = null;
+								comp[pntr+1] = temp;
+								pntr++;
+							}
+						}
+					}
+				}
+				// *** //
+				temp = "";
+				// *** //
+				for ( let elem of comp )
+				{
+					if ( elem != null )
+						temp += elem;
+				}
+				// *** //
+				arry[from] = temp;
+				// *** //
+				let out = "";
+				// *** //
+				for ( let pos = 0; pos < arry.length; pos++ )
+				{
+					if ( arry[pos] != null )
+						out += arry[pos];
+				}
+				// *** //
+				__kpi_parse_jsx( out, modifier, cbout, evelCode );
+				// *** //
+				return text;
+			}
+		);
+	}).
+	catch((err) => console.error('Error:', err));
+}
+
+function __kpi_parse_jsx ( code, modifier, cbout, evcode )
+{
+	if ( Array.isArray(modifier) )//&& modifier.length > 0 )
+	{
+		let state = false; let skip = false; let temp = "", outp = "";
+		let jsxmd = false; let skip_jsx_closer = false;
+		// *** //
+		const arry = []; let cmpnt = [];
+		// *** //
+		let evalCode = evcode;
+		// *** //
+		for ( let next = 0; next < code.length; next++ )
+		{
+			switch ( code[next] )
+			{
+				case '<': case '>': case '%': case '{': case '}': 
+				case '"': case '`': case '\'':
+				case ' ': case '\t': case '\n': case '\r':
+					if ( temp )
+						arry.push( temp );
+					// *** //
+					temp = "";
+					// *** //
+					arry.push(code[next]);
+					// *** //
+					break;
+				default:
+					temp += code[next];
+					break;
+			}
+		}
+		// *** //
+		if ( temp )
+			arry.push( temp );
+		// *** //
+		let t = ""; let ji = false; let jstart = -1; let lc = '';
+		// *** //
+		for ( let next = 0; next < arry.length; next++ )
+		{
+			if ( jsxmd === true )
+			{
+				if ( arry[next][0] === '#' )
+				{
+					let w = false; let e = 0;
+					// *** //
+					for ( let x = 0; x < arry[next].length; x++ )
+					{
+						if ( arry[next][x] === '[' )
+						{
+							w = true;
+							break;
+						}
+					}
+					// *** //
+					for ( let x = 0; x < arry[next].length; x++ )
+					{
+						if ( arry[next][x] === '#' && x === 0 )
+						{
+							switch ( w )
+							{
+								case false:
+									t = 'document.getElementById("';
+									break;
+								case true:
+									t = 'document.getElementsByTagName("';
+									break;
+							}
+						}
+						else if ( arry[next][x] === '.' && w === false && e === 0 )
+						{
+							t += '").';
+							e++;
+						}
+						else if ( arry[next][x] === '[' && w === true && e === 0 )
+						{
+							t += '")[';
+							e++;
+						}
+						else
+						{
+							switch( arry[next][x] )
+							{
+								case '\n': case '\r': case '\t':
+									break;
+								default:
+									t += arry[next][x];
+							}
+						}
+					}
+					// *** //
+					let clp = 0;
+					// *** /
+					for ( let x = 0; x < t.length; x++ )
+					{
+						if ( t[x] === '(' )
+							clp++;
+						else if ( t[x] === ')' )
+							clp--;
+					}
+					// *** //
+					if ( clp != 0 )
+						t += '")';
+					// *** //
+					arry[next] = t;
+console.log(">----> " + t);
+				}
+				// *** //
+				t = "";
+				// *** //
+				switch ( arry[next] )
+				{
+					case '>':
+						if ( next != jstart + 1 )
+							evalCode += arry[next];
+						break;
+					case '<':
+						if ( next + 1 < arry.length && arry[next+1] != '/jsx' )
+							evalCode += arry[next];
+						break;
+					case '/jsx':
+						skip_jsx_closer = true;
+						break;
+					case '{':
+						if ( next + 1 < arry.length && arry[next+1] == '%' )
+						{
+							evalCode += "`";
+							ji = true;
+							next++;
+						}
+						else
+							evalCode += arry[next];
+						break;
+					case '%':
+						if ( next + 1 < arry.length && arry[next+1] == '}' )
+						{
+							evalCode += "`";
+							ji = false;
+							next++;
+						}
+						else
+							evalCode += arry[next];
+						break;
+					case ' ':
+						if ( lc != '<' && lc != '>' )
+							evalCode += arry[next];
+						break;
+					default:
+						if ( ji === false )
+							evalCode += arry[next];
+						else
+						{
+							switch ( arry[next] )
+							{
+								case '\n': case '\r': case '\t':
+									break;
+								default:
+									evalCode += arry[next];
+									break;
+							}
+						}
+						break;
+				}
+			}
+			// *** //
+			switch ( arry[next] )
+			{
+				case '%': case '<':
+					if ( next > 0 && arry[next-1] === '{' )
+						skip = false;
+					else if ( next + 1 < arry.length && arry[next+1] === '}' )
+						skip = false;
+					else if ( next > 0 && arry[next-1] === '%' )
+						skip = false;
+					else if ( next + 1 < arry.length && arry[next+1] === '%' )
+						skip = false;
+					else
+						skip = true;
+					break;
+				case '{':
+					break;
+				case '}':
+					break;
+				default:
+					if ( next > 0 && arry[next - 1] == '%' )
+					{
+						for ( let item of modifier )
+						{
+							if ( item.key === arry[next] )
+							{
+								arry[next] = item.callback();
+								// *** //
+								break;
+							}
+						}
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'jsx' && __kpi_installed_units.length > 0 )
+					{
+						arry[next] = "";//"<script>";
+						jstart = next;
+						jsxmd = true;
+						skip_jsx_closer = false;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/jsx' && __kpi_installed_units.length > 0 )
+					{
+						arry[next] = "";//"</script>";
+						jsxmd = false;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && __kpi_installed_units.length > 0 )
+					{
+						state = true;
+						// *** //
+						cmpnt = [];
+						// *** //
+						for ( let item of __kpi_installed_units )
+						{
+							if ( item.name === arry[next] )
+							{
+								state = false; let sc = ""; let sg = false;
+								// *** //
+								for ( let indx = next - 1; indx < arry.length; indx++ )
+								{
+									switch ( arry[indx] )
+									{
+										case '"':
+											if ( sg === false )
+											{
+												sg = true;
+												sc = arry[indx];
+											}
+											else if ( sg === true && sc === arry[indx] )
+											{
+												sg = false;
+											}
+											break;
+										case '`':
+											if ( sg === false )
+											{
+												sg = true;
+												sc = arry[indx];
+											}
+											else if ( sg === true && sc === arry[indx] )
+											{
+												sg = false;
+											}
+											break;
+										case '\'':
+											if ( sg === false )
+											{
+												sg = true;
+												sc = arry[indx];
+											}
+											else if ( sg === true && sc === arry[indx] )
+											{
+												sg = false;
+											}
+											break;
+									}
+									// *** //
+									if ( sg === false )
+									{
+										switch(arry[indx])
+										{
+											case ' ': case '\t': case '\n': case '\r':
+												break;
+											default:
+												cmpnt.push( arry[indx] );
+										}
+									}
+									else
+										cmpnt.push( arry[indx] );
+									// *** //
+									if ( arry[indx] === '>' )
+									{
+										arry[indx] = null;
+										if ( item.style != undefined )
+										{
+											if ( __kpi_component_driven_stylesheets.includes(item.style) == false )
+												__kpi_component_driven_stylesheets.push(item.style);
+										}
+										__kpi_parse_component( item, cmpnt, arry, next, next -1, indx, code, modifier, cbout, evalCode );
+										next = indx + 1;
+										return "";
+									}
+									else
+										arry[indx] = null;
+								}
+								// *** //
+								break;
+							}
+						}
+						// *** //
+						if ( state === true )
+						{
+							state = false;
+							if ( jsxmd == false )
+								outp += arry[next - 1];
+						}
+					}
+					else if ( arry[next] === '>' && skip_jsx_closer === true )
+						skip = true;
+					// *** //
+					break;
+			}
+			// *** //
+			if ( skip == false && jsxmd == false )
+				outp += arry[next];
+			else
+				skip = false;
+			// *** //
+			switch ( arry[next] )
+			{
+				case ' ': case '\t': case '\r': case '\n':
+					break;
+				default:
+					lc = arry[next];
+					break;
+			}
+		}
+		// *** //
+		evalCode = evalCode.trim();
+		// *** //
+		if ( __kpi_component_driven_stylesheets.length > 0 )
+		{
+			for ( let css of __kpi_component_driven_stylesheets )
+			{
+				if ( __kpi_component_driven_ss_oppcheck.includes(css) === false )
+				{
+					__kpi_component_driven_ss_oppcheck.push(css);
+					// *** //
+					outp = `<link rel="stylesheet" href="${css}">` + outp;
+				}
+			}
+		}
+console.log(outp);
+console.log(evalCode);
+		// *** //
+		cbout(outp,evalCode);
+		// *** //
+		if ( evalCode && typeof evalCode === "string" )
+			eval(evalCode);
+		// *** //
+		return code;
+	}
+	else
+		return code;
+}
+
 const kpi = // Modular Chain-Root
 {
 
@@ -41,8 +528,8 @@ const kpi = // Modular Chain-Root
 	 * KPI Version
 	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-	version: '1.0.3.9',
-	fullver: 'KPI 1.0.3.9, Compact Release',
+	version: '1.0.4.0',
+	fullver: 'KPI 1.0.4.0, Compact Release',
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * The body-element
@@ -319,7 +806,6 @@ const kpi = // Modular Chain-Root
 
 		},
 
-
 		head : {
 
 			set : ( code ) => {
@@ -387,6 +873,15 @@ const kpi = // Modular Chain-Root
 
 		}
 
+	},
+
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * Install components to the environment, before load content
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+	install : ( unit ) => {
+
+		__kpi_installed_units.push( unit );
 
 	},
 
@@ -410,7 +905,7 @@ const kpi = // Modular Chain-Root
 			}
 
 		}
-	
+
 		this.goto = function (path) {
 
 			for ( let vw of this._vw )
@@ -420,7 +915,7 @@ const kpi = // Modular Chain-Root
 				{
 					__kpi_temp_counter = 0;
 					// *** //
-					__kip_hide_popups = [];
+					__kpi_hide_popups = [];
 					// *** //
 					switch ( typeof vw.page )
 					{
@@ -461,7 +956,8 @@ const kpi = // Modular Chain-Root
 							 * {                      {
 							 *   type : 'template',     type: 'jsx',
 							 *   path : 'url',          path : 'url',          // Source where the data will be fetched from
-							 *   modifier : [],         modifier : [],         // Objects of { key : 'placeholder', callback : foo }
+							 *   modifier : []          modifier : [],         // Objects of { key : 'placeholder', callback : foo }
+							 *                          pattern : cb           // Callback for the structure
 							 * }                      }
 							 *
 							 * -- css / kss --        -- js --
@@ -475,7 +971,37 @@ const kpi = // Modular Chain-Root
 							switch( vw.page.type )
 							{
 								case 'template':
+									{
+
+									}
+									break;
+								case 'html':
+									{
+
+									}
+									break;
 								case 'jsx':
+									/* * * * * * * * * * * * * * * * * * * * * *
+									 * The JSX-Code will be pre-compiled, before
+									 * sending to the document
+									 * * * * * * * * * * * * * * * * * * * * * */
+									{
+										__kpi_component_driven_stylesheets = [];
+										__kpi_component_driven_ss_oppcheck = [];
+										// *** //
+										fetch(vw.page.url).
+										then((code) => {
+											return code.text().then(
+												(text) => {
+													let temp = __kpi_parse_jsx(text, vw.page.modifier, vw.page.pattern, '');
+													// *** //
+													vw.page.pattern(temp);
+												}
+											);
+										}).
+										catch((err) => console.error('Error:', err));
+									}
+									break;
 							}
 							// *** //
 							break;
@@ -488,10 +1014,10 @@ const kpi = // Modular Chain-Root
 							break;
 					}
 					// *** //
-					if ( __kip_hide_popups.length > 0 )
+					if ( __kpi_hide_popups.length > 0 )
 					{
 						document.getElementsByTagName("html")[0].onmouseup = function () {
-							for ( let x of __kip_hide_popups )
+							for ( let x of __kpi_hide_popups )
 								document.getElementById(x).style.display = "none";
 						};
 					}
@@ -2785,7 +3311,7 @@ const kpi = // Modular Chain-Root
 				{
 					this._cd += `onclick = 'let o = document.getElementById("${this._id}.${key}.popup.box").style;`;
 					this._cd += `if (o.display=="block") o.display="none"; else if (o.display=="none") o.display="block";`;
-					this._cd += `__kip_hide_popupi = "${this._id}.${key}.popup.box";`;
+					this._cd += `__kpi_hide_popupi = "${this._id}.${key}.popup.box";`;
 					this._cd += `'`;
 				}
 
@@ -2849,7 +3375,7 @@ const kpi = // Modular Chain-Root
 
 				if ( popp.length > 0 )
 				{
-					__kip_hide_popups.push( `${this._id}.${key}.popup.box` );
+					__kpi_hide_popups.push( `${this._id}.${key}.popup.box` );
 					// *** //
 					this._cd += `<div id = "${this._id}.${key}.popup.box" class = "${this._cl}-popup-box" style = "display:none;"><div class = "inner" style = "`;
 					// *** //
@@ -3110,9 +3636,9 @@ const kpi = // Modular Chain-Root
 			else
 				this._cd += ` style = "overflow: auto; max-height: 300px;`;
 
-			this._cd += `z-index:${__kip_z_order_idx}; display: flex;`;
+			this._cd += `z-index:${__kpi_z_order_idx}; display: flex;`;
 
-			__kip_z_order_idx++;
+			__kpi_z_order_idx++;
 
 			if ( attr != null )
 			{
@@ -3352,9 +3878,9 @@ const kpi = // Modular Chain-Root
 			else
 				this._cd += ` style = "overflow: auto; max-height: 300px;`;
 
-			this._cd += `z-index:${__kip_z_order_idx}; display: flex;`;
+			this._cd += `z-index:${__kpi_z_order_idx}; display: flex;`;
 
-			__kip_z_order_idx++;
+			__kpi_z_order_idx++;
 
 			if ( attr != null )
 			{
@@ -4731,3 +5257,7 @@ const kpi = // Modular Chain-Root
 	}
 
 };
+
+// *** //
+
+const __kpi_router = kpi.router();

@@ -1,0 +1,145 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>kpi</title>
+		<meta charset = "utf-8">
+		<script type = "text/javascript" src = "kpi.js"></script>
+        <style>
+            .mymainstyle
+            {
+                line-height: 30px;
+                font-size: 18px;
+            }
+        </style>
+	</head>
+	<body>
+		<script>
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Routing declaration
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            const server = 'http://localhost:5500';
+            const routes = `${server}/xmlparts`;
+            const cmpnts = `${server}/components`;
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * The router
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             const router = kpi.router();
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Sample counters for the main-page
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             let id_counter = 0, item_counter = 0, index_counter = 0;
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Shared structure function
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             function page_structure( htmlCode )
+			{
+                id_counter = 0;
+                item_counter = 0;
+                index_counter = 0;
+                // *** //
+				const content = kpi.view();
+				// *** //
+				kpi.into.body.set
+				(
+					content.rows
+					(
+						'100%', '100%'
+					)
+				);
+				// Create a button
+				const goback = new kpi.button();
+				// *** //
+				goback.create( "Back to menu", () => router.goto('/') );
+				// *** //
+                content.set( 0, htmlCode );
+				content.set( 1, goback.get() );
+				// *** //
+				goback.init();
+			}
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Install the route-component
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             kpi.install(
+                {
+                    type: 'jsx',
+                    name: 'route',
+                    source: `${cmpnts}/route/route.jsh`,
+                    style: `${cmpnts}/route/route.css`
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Install the about-component
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            kpi.install(
+                {
+                    type: 'jsx',
+                    name: 'about',
+                    source: `${cmpnts}/about/about.jsh`,
+                    style: `${cmpnts}/about/about.css`
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Initialize the router
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             router.init
+			(
+				{ path: '/', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/main.jsh`,
+                        pattern : page_structure,
+                        modifier : 
+                        [
+                            {
+                                key : 'myclass',
+                                callback : () => 'mymainstyle'
+                            },
+                            {
+                                key : 'id',
+                                callback : () => { id_counter++; return id_counter - 1; }
+                            },
+                            {
+                                key : 'item',
+                                callback : () => { item_counter++; return item_counter - 1; }
+                            },
+                            {
+                                key : 'index',
+                                callback : () => { index_counter++; return index_counter - 1; }
+                            }
+                        ]
+                    }
+                },
+				{ path: '/info', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/info.jsh`,
+                        pattern : page_structure,
+                        modifier : []
+                    }
+                },
+                { path: '/contact', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/contact.jsh`,
+                        pattern : page_structure,
+                        modifier : 
+                        [
+                            {
+                                key : 'myclass',
+                                callback : () => 'mymainstyle'
+                            }
+                        ]
+                    }
+                }
+			);
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Route to the root-page (main-page)
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             router.goto("/");
+		</script>
+	</body>
+</html>

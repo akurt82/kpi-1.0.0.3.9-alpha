@@ -1,0 +1,12 @@
+.kpi-component-route
+{
+    background-color: rgb( 230, 230, 230 );
+    color: rgb( 30, 40, 90 );
+    cursor: pointer;
+    padding: 10px;
+}
+.kpi-component-route:hover
+{
+    background-color: rgb( 242, 245, 249 );
+    box-shadow: inset 4px 4x 4px rgba( 0, 0, 0, 0.08 );
+}
