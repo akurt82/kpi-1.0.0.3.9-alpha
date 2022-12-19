@@ -1,0 +1,31 @@
+.kpi-component-about
+{
+    box-shadow: 4px 4px 4px rgba( 0, 0, 0, 0.08 );
+    border: 2px solid rgb( 130, 145, 180 );
+    background-color: rgb( 238, 240, 242 );
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
+    line-height: 30px;
+    text-align: left;
+    margin: 24px 5px;
+    padding: 1px;
+}
+
+.kpi-component-about label
+{
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px;
+}
+
+.kpi-component-about div
+{
+    font-weight: bold;
+    font-size: 15px;
+    padding: 4px;
+}
+
+.kpi-component-about div:hover
+{
+    background-color: rgba( 0, 0, 0, 0.08 );
+}

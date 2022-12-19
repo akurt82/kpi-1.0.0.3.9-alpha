@@ -390,8 +390,7 @@
 			 * The Address-Book-Page
 			 * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-			if ( kpi.ses.getItem( "addrbook.count" ) == "" )
-				kpi.ses.setItem( "addrbook.count", "0" );
+			kpi.ses.setItem( "addrbook.count", "0" );
 
 			function pageAddr()
 			{
@@ -498,7 +497,7 @@
 				inbx4.init();
 				abook.init();
 				// *** //
-				let cnt = kpi.ses.getItem( "addrbook.count" );
+				let cnt = parseInt(kpi.ses.getItem( "addrbook.count" ));
 				// *** //
 				abook.attr.innerHTML = "";
 				// *** //
@@ -730,7 +729,7 @@
 				let cnt = kpi.ses.getItem( "addrbook.count" );
 				// *** //
 				table.setClass( "sheettab-table" );
-				table.create( 1, 4, parseInt(cnt), () => {} );
+				table.create( 1, 4, parseInt(cnt) + 1, () => {} );
 				// Fill the content
 				content.set( 0, hline.get() );
 				content.set( 1, table.get() );
@@ -740,12 +739,17 @@
 				table.cell( 2, 0 ).innerHTML = "Age";
 				table.cell( 3, 0 ).innerHTML = "Address";
 				// *** //
-				for ( let p = 0; p < cnt - 1; p++ )
+				for ( let p = 0; p < cnt; p++ )
 				{
 					let fn = kpi.ses.getItem( `addrbook.item.fn.${p}` );
 					let nn = kpi.ses.getItem( `addrbook.item.nn.${p}` );
 					let ag = kpi.ses.getItem( `addrbook.item.ag.${p}` );
 					let ln = kpi.ses.getItem( `addrbook.item.ln.${p}` );
+					// *** //
+					table.cell( 0, 1 + p ).innerHTML = fn;
+					table.cell( 1, 1 + p ).innerHTML = nn;
+					table.cell( 2, 1 + p ).innerHTML = ag;
+					table.cell( 3, 1 + p ).innerHTML = ln;
 					// *** //
 					switch( p )
 					{
@@ -759,11 +763,6 @@
 							// *** //
 							break;
 					}
-					// *** //
-					table.cell( 0, 1 + p ).innerHTML = fn;
-					table.cell( 1, 1 + p ).innerHTML = nn;
-					table.cell( 2, 1 + p ).innerHTML = ag;
-					table.cell( 3, 1 + p ).innerHTML = ln;
 				}
 				// Initialize event-handlers
 				goback.init();
@@ -784,7 +783,7 @@
 					content.tile
 					(
 						{ model : 'rows', fields: [ '100%', '100%', '100%', '100%', '100%', '100%', '100%', '100%', '100%' ] },
-						{ model : 'cols', fields: [ '100%', '100%', '100%', '100%', '100%', '100%' ] }
+						{ model : 'cols', fields: [ '100%', '100%', '100%', '100%', '100%', '100%' ] }
 					)
 				);
 				// Create a button
@@ -1355,7 +1354,7 @@
 				{ path: '/addrbook', page: pageAddr },
 				{ path: '/paint', page: pageDraw },
 				{ path: '/sheettab', page: pageSheetTab },
-				{ path: '/mbdemo', page: pageMenusNBars },
+				{ path: '/mbdemo', page: pageMenusNBars },
 				{ path: '/controls', page: pageControls }
 			);
 
