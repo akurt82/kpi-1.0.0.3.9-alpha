@@ -528,7 +528,9 @@
 				(
 					content.tile
 					(
-						{ model : 'cols', fields: [ '100%' ] },
+						// Title-Field
+						{ model : 'cols', fields: [ '100%' ] },                        //     |----- Columns of -----|
+						//                          Tools   Draft-Area                         Color 1 Color 2 Color 3
 						{ model : 'cols', fields: [ '80px', { size: '100%', overFlow: 'auto' }, '20px', '20px', '20px' ] }
 					)
 				);
@@ -542,9 +544,9 @@
 				hline.setClass( "hl" );
 				hline.setTitle( "Paint Demo" );
 				hline.setText( goback.get() );
-				// *** //
+				// Need to draw something
 				const sketch = new kpi.graphics.sketch;
-				// *** //
+				// Tool-Buttons
 				const tool1 = new kpi.button();
 				const tool2 = new kpi.button();
 				const tool3 = new kpi.button();
@@ -553,22 +555,28 @@
 				const tool6 = new kpi.button();
 				const tool7 = new kpi.button();
 				const tool8 = new kpi.button();
-				// *** //
+				// The drawable-area
 				const canvs = new kpi.canvas();
-				// *** //
+				// Colors-Array
 				const color = [];
-				// *** //
+				// Create the color-component-instances
 				for ( let c = 0; c < 24; c++ )
 				{
+					// New instance
 					let item = new kpi.colorShape();
+					// CSS-Style for the instanced-item
 					item.setClass( "calc-button" );
+					// Randomly mixed color
 					let r = Math.floor(Math.random() * 256);
 					let g = Math.floor(Math.random() * 256);
 					let b = Math.floor(Math.random() * 256);
+					// Create the instance-item
 					item.create( `rgb( ${r}, ${b}, ${g} )`, () => { sketch.color = `rgb( ${r}, ${b}, ${g} )` } );
+					// Push the item to the color-array
 					color.push( item );
 				}
-				// *** //
+				// When clicking on a tool-button, it will be
+				// colorized, the others become de-colorized
 				const switchTool = () => {
 					tool1.attr.style.backgroundColor = "";
 					tool2.attr.style.backgroundColor = "";
@@ -591,7 +599,7 @@
 						case 7: tool8.attr.style.backgroundColor = "rgba( 200, 200, 200, 0.5 )"; break;
 					}
 				}
-				// *** //
+				// Create the tool-buttons
 				tool1.setClass( "calc-button" ); tool1.create( "Mouse", () => { sketch.mode = 0; switchTool(); } );
 				tool2.setClass( "calc-button" ); tool2.create( "Pen", () => { sketch.mode = 1; switchTool(); } );
 				tool3.setClass( "calc-button" ); tool3.create( "Brush", () => { sketch.mode = 2; switchTool(); } );
@@ -600,7 +608,7 @@
 				tool6.setClass( "calc-button" ); tool6.create( "Frame", () => { sketch.mode = 5; switchTool(); } );
 				tool7.setClass( "calc-button" ); tool7.create( "Circle1", () => { sketch.mode = 6; switchTool(); } );
 				tool8.setClass( "calc-button" ); tool8.create( "Circle2", () => { sketch.mode = 7; switchTool(); } );
-				// *** //
+				// Create the drawable-area
 				canvs.setClass( "sketch" ); canvs.create( [
 					{ event : 'mousedown', callback : () => { sketch.start() } },
 					{ event : 'mouseup', callback : () => { sketch.strip(); sketch.getPNG(); } },
@@ -667,7 +675,7 @@
 				content.put( 1, tool7.get() + '<br />' );
 				content.put( 1, tool8.get() + '<br />' );
 				content.set( 2, canvs.get() );
-				// *** //
+				// Put the color-items
 				for ( let p = 0; p < 8; p++ )
 				{
 					content.put( 3, color[p +  0].get() );

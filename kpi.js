@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Kurt's Programming Interface
- * Version 1.0.4.0 (Alpha Stadium)
+ * Version 1.0.4.1 (Alpha Stadium)
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Author: Abduelaziz Kurt
  * E-Mail: abdkurt1982@gmail.com
@@ -22,6 +22,8 @@ let __kpi_collected_component_instances = [];
 
 let __kpi_component_driven_stylesheets = [];
 let __kpi_component_driven_ss_oppcheck = [];
+
+const __kpi_keylist_array_object = [];
 
 const __kpi_installed_units = [];
 
@@ -179,6 +181,7 @@ function __kpi_parse_jsx ( code, modifier, cbout, evcode )
 	if ( Array.isArray(modifier) )//&& modifier.length > 0 )
 	{
 		let state = false; let skip = false; let temp = "", outp = "";
+		let jspip = false; let jskey = false; let jsfoo = false;
 		let jsxmd = false; let skip_jsx_closer = false;
 		// *** //
 		const arry = []; let cmpnt = [];
@@ -369,17 +372,43 @@ console.log(">----> " + t);
 							}
 						}
 					}
-					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'jsx' && __kpi_installed_units.length > 0 )
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'jsx' && __kpi_installed_units.length > 0 || 
+					          next > 0 && arry[next -1] == '<' && arry[next] === 'js' && __kpi_installed_units.length > 0 )
 					{
 						arry[next] = "";//"<script>";
 						jstart = next;
 						jsxmd = true;
 						skip_jsx_closer = false;
 					}
-					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/jsx' && __kpi_installed_units.length > 0 )
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/jsx' && __kpi_installed_units.length > 0 ||
+					          next > 0 && arry[next -1] == '<' && arry[next] === '/js' && __kpi_installed_units.length > 0 )
 					{
 						arry[next] = "";//"</script>";
 						jsxmd = false;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'pipe' && __kpi_installed_units.length > 0 )
+					{
+
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/pipe' && __kpi_installed_units.length > 0 )
+					{
+
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'key' && __kpi_installed_units.length > 0 )
+					{
+
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/key' && __kpi_installed_units.length > 0 )
+					{
+
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'foo' && __kpi_installed_units.length > 0 )
+					{
+
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/foo' && __kpi_installed_units.length > 0 )
+					{
+
 					}
 					else if ( next > 0 && arry[next -1] == '<' && __kpi_installed_units.length > 0 )
 					{
@@ -528,8 +557,30 @@ const kpi = // Modular Chain-Root
 	 * KPI Version
 	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-	version: '1.0.4.0',
-	fullver: 'KPI 1.0.4.0, Compact Release',
+	version: '1.0.4.1',
+	fullver: 'KPI 1.0.4.1, Compact Release',
+
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * KPI-wide placeholder-list. Each entry is an object and
+	 * has the specification { entry : '', value : '' }. The key
+	 * is a string, the value must be a string or a number or a
+	 * float. Arrays, objects and other kind of data are not
+	 * supported. The keylist can be used to replace several 
+	 * placeholders within the jsh-files while pre-compiling.
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+	keylist : 
+	{
+		add : function(value)
+		{
+			__kpi_keylist_array_object.push(value);
+		},
+
+		count : function(value)
+		{
+			return __kpi_keylist_array_object.length;
+		}
+	},
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * The body-element
@@ -618,7 +669,15 @@ const kpi = // Modular Chain-Root
 	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 	doc : document,
+	eid : document.getElementById,
+	enm : document.getElementsByTagName,
+	ens : document.getElementsByTagNameNS,
+	ecs : document.getElementsByClassName,
+	sel : document.querySelector,
+	sal : document.querySelectorAll,
 	wnd : window,
+	int : window.setInterval,
+	tmr : window.setTimeout,
 	nav : navigator,
 	loc : location,
 	his : history,
@@ -1045,6 +1104,12 @@ const kpi = // Modular Chain-Root
 
 		this._ky = [];
 
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* create containers that automatically wrap to the next row
+		* if the current one has not enough space to provice the
+		* specific container-content.
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.wrap = function () {
 
 			if ( arguments.length > 0 )
@@ -1106,7 +1171,11 @@ const kpi = // Modular Chain-Root
 			return '';
 
 		}
-	
+
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Create containers that will be moved to an own row
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.rows = function () {
 
 			if ( arguments.length > 0 )
@@ -1168,7 +1237,11 @@ const kpi = // Modular Chain-Root
 			return '';
 
 		}
-	
+
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Create containers that act like columns
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.cols = function () {
 
 			if ( arguments.length > 0 )
@@ -1231,6 +1304,20 @@ const kpi = // Modular Chain-Root
 
 		}
 
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Create containers that are arranged in a complex cell 
+		* relationship like in a table structure.
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+		this.grid = function () {
+
+		}
+
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Creates a complex viewport structure, which can be composed 
+		* of WRAP, ROWS, COLS and GRID.e
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.tile = function () {
 
 			/*
@@ -1243,6 +1330,7 @@ const kpi = // Modular Chain-Root
 					{ model : 'wrap', fields : [ 100, 50, 20, 30, 50 ] },
 					{ model : 'cols', fields : ... },
 					{ model : 'rows', fields : ... },
+					{ model : 'grid', fields : ... }
 
 				)
  
@@ -1489,6 +1577,10 @@ const kpi = // Modular Chain-Root
 
 			if ( document.getElementById(this._ky[index]) != null )
 			return document.getElementById(this._ky[index]).innerHTML;
+
+		}
+
+		this.grab = function () {
 
 		}
 
