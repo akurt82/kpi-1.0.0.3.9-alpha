@@ -1,4 +1,4 @@
-<div class = "kpi-component-about">
+<div id = "%*" class = "kpi-component-about">
     <label>I am a/an:</label>
     <div>%title</div>
     <label>First- and Second-name:</label>

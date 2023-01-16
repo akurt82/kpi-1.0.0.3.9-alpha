@@ -1,0 +1,193 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>kpi</title>
+		<meta charset = "utf-8">
+		<script type = "text/javascript" src = "kpi.js"></script>
+        <style>
+            .mymainstyle
+            {
+                line-height: 30px;
+                font-size: 18px;
+            }
+        </style>
+	</head>
+	<body>
+		<script>
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Routing declaration
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            const server = 'http://localhost:5500';
+            const routes = `${server}/xmlparts`;
+            const cmpnts = `${server}/components`;
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * The router
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            const router = kpi.router();
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Sample counters for the main-page
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            let id_counter = 0, item_counter = 0, index_counter = 0;
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Base-Structure initialization
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            const content = kpi.view();
+            // *** //
+            kpi.into.body.set
+            (
+                content.rows
+                (
+                    '100%', '100%', '100%'
+                )
+            );
+            // Create a button
+            const goback = new kpi.button();
+            // *** //
+            goback.create( "Back to menu", () => router.goto('/') );
+            // *** //
+            content.set( 2, goback.get() ); // The Back-Button will set to the last container
+            // *** //
+            goback.init();
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Shared structure function
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            function page_structure( bodyCode )
+			{
+                id_counter = 0;
+                item_counter = 0;
+                index_counter = 0;
+                // *** //
+                content.set( 1, bodyCode ); // The current content will be set to the middle container
+			}
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Install the route-component
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            kpi.install
+            (
+                {
+                    type: 'jsx',
+                    name: 'route',
+                    source: `${cmpnts}/route/route.jsh`,
+                    style: `${cmpnts}/route/route.css`
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Install the about-component
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            kpi.install
+            (
+                {
+                    type: 'jsx',
+                    name: 'about',
+                    source: `${cmpnts}/about/about.jsh`,
+                    style: `${cmpnts}/about/about.css`
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Install the card-component
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             kpi.install
+            (
+                {
+                    type: 'jsx',
+                    name: 'card',
+                    source: `${cmpnts}/card/card.jsh`,
+                    style: `${cmpnts}/card/card.css`
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Append placeholders for jsh pre-compilation
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            kpi.keylist.add
+            (
+                {
+                    entry : 'local',
+                    value : server
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * The menu-bar will be set only once
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            content.grab
+            (
+				{ 
+                    field : 0, // The menu-bar will set to the first container
+                    type : 'jsx',
+                    url  : `${routes}/menu.jsh`,
+                    modifier : []
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Initialize the router
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            router.init
+			(
+				{ path: '/', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/main.jsh`,
+                        pattern : page_structure,
+                        modifier : 
+                        [
+                            {
+                                key : 'myclass',
+                                callback : () => 'mymainstyle'
+                            },
+                            {
+                                key : 'id',
+                                callback : () => { id_counter++; return id_counter - 1; }
+                            },
+                            {
+                                key : 'item',
+                                callback : () => { item_counter++; return item_counter - 1; }
+                            },
+                            {
+                                key : 'index',
+                                callback : () => { index_counter++; return index_counter - 1; }
+                            }
+                        ]
+                    }
+                },
+				{ path: '/info', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/info.jsh`,
+                        pattern : page_structure,
+                        modifier : []
+                    }
+                },
+                { path: '/contact', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/contact.jsh`,
+                        pattern : page_structure,
+                        modifier : 
+                        [
+                            {
+                                key : 'myclass',
+                                callback : () => 'mymainstyle'
+                            }
+                        ]
+                    }
+                },
+				{ path: '/cards', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/cards.jsh`,
+                        pattern : page_structure,
+                        modifier : []
+                    }
+                }
+			);
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Route to the root-page (main-page)
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+            router.goto("/cards");
+		</script>
+	</body>
+</html>

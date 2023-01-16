@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Kurt's Programming Interface
- * Version 1.0.4.0 (Alpha Stadium)
+ * Version 1.0.4.1 (Alpha Stadium)
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Author: Abduelaziz Kurt
  * E-Mail: abdkurt1982@gmail.com
@@ -23,6 +23,8 @@ let __kpi_collected_component_instances = [];
 let __kpi_component_driven_stylesheets = [];
 let __kpi_component_driven_ss_oppcheck = [];
 
+const __kpi_keylist_array_object = [];
+
 const __kpi_installed_units = [];
 
 function __kpi_disp_swi ()
@@ -42,7 +44,87 @@ function __kpi_disp_swi ()
 	}
 }
 
-async function __kpi_parse_component ( item, cpnt, arry, next, from, till, code, modifier, cbout, evelCode )
+let __kpi_modified_specific_pipe_key_index = 0;
+let __kpi_modified_specific_pipe_foo_index = 0;
+
+function __kpi_modify_specific_key_placeholder( item, keys, foos, targetComponent )
+{
+	if ( item.length > 0 )
+	{
+		if ( item )
+		{
+			const tk = []; let tx = ""; let r = "";
+			let i1 = 0; let i2 = 0;
+			let mode = 0;
+			// *** //
+			for ( let x = 0; x < item.length; x++ )
+			{
+				switch( item[x] )
+				{
+					case '<': case '>': case '=': case '"': case '\'':
+					case '`': case '!': case '+': case '-': case '*':
+					case '/': case '&': case '%': case '?': case '#':
+					case '.': case ':': case ';': case ',': case '|':
+					case '[': case ']': case '{': case '}': case '?':
+					case '(': case ')': case '@': case '$': case ' ':
+					case '\t':
+						if (tx) tk.push(tx);
+						tk.push(item[x]);
+						tx = "";
+						break;
+					default:
+						tx += item[x];
+						break;
+				}
+			}
+			// *** //
+			if (tx) tk.push(tx);
+			// *** //
+			for ( let x = 0; x < tk.length; x++ )
+			{
+				i1 = __kpi_modified_specific_pipe_key_index;
+				i2 = __kpi_modified_specific_pipe_foo_index;
+				mode = 0;
+				// *** //
+				for ( let e of keys )
+				{
+//console.log( "             !!! " + tk[x] + " >< " + e.name + " >> " + targetComponent + " >< " + e.element );
+					if ( tk[x] == e.name )// && targetComponent == e.element )
+					{
+						tk[x] += __kpi_modified_specific_pipe_key_index;//i1;
+						mode = 1;
+					}
+					// *** //
+					i1++;
+				}
+				if ( mode == 0 )
+				{
+					for ( let e of foos )
+					{
+						if ( tk[x] == e.name )
+						{
+							tk[x] += __kpi_modified_specific_pipe_foo_index;//i2;
+							mode = 1;
+						}
+						// *** //
+						i2++;
+					}
+				}
+				r += tk[x];
+			}
+			// *** //
+			//__kpi_modified_specific_pipe_key_index = i1;
+			//__kpi_modified_specific_pipe_foo_index = i2;
+			// *** //
+if (mode==1)console.log("       %% ----->>>>>> " + item + " >< " + r);
+			return r;
+		}
+		else return item;
+	}
+	else return item;
+}
+
+async function __kpi_parse_component ( item, cpnt, arry, next, from, till, code, modifier, cbout, evalCode )
 {
 	await fetch(item.source).
 	then(async (code) => {
@@ -50,16 +132,22 @@ async function __kpi_parse_component ( item, cpnt, arry, next, from, till, code,
 			(text) => {
 				// *** //
 				let temp = "";
-				let newc = [];
+				let iden = "";
+				let evco = evalCode;
 				const comp = [];
+				const attr = [];
 				// *** //
+//console.log(">>>> streamed: " + text);
 				for ( let pntr = 0; pntr < text.length; pntr++ )
 				{
 					switch ( text[pntr] )
 					{
 						case '<': case '>': case '%': case '{': case '}': 
-						case '"': case '`': case '\'': case '=':
+						case '"': case '`': case '\'': case '=': case ',':
 						case ' ': case '\t': case '\n': case '\r':
+						case '(': case ')': case '[': case ']': case '#':
+						case '|': case '&': case '$': case '+': case '*':
+						case ':': case ';':
 							if ( temp )
 								comp.push( temp );
 							// *** //
@@ -138,10 +226,20 @@ async function __kpi_parse_component ( item, cpnt, arry, next, from, till, code,
 									if (  br == true )
 										break;
 								}
+								// *** //
+								if ( comp[pntr + 1] == '*' )
+									attr.push( { key : 'id', value : temp } );
+								else
+									attr.push( { key : comp[pntr + 1], value : temp } );
+								// *** //
 console.log( cpnt[xpos-1] + " >< " + temp );
+								if ( comp[pntr+1] == '*' )
+									iden = temp;
+								// *** //
 								comp[pntr] = null;
 								comp[pntr+1] = temp;
 								pntr++;
+								temp = "";
 							}
 						}
 					}
@@ -164,13 +262,33 @@ console.log( cpnt[xpos-1] + " >< " + temp );
 					if ( arry[pos] != null )
 						out += arry[pos];
 				}
+//console.log("\n\ncreated: " + out + '\n\n\n');
 				// *** //
-				__kpi_parse_jsx( out, modifier, cbout, evelCode );
+				if (iden)
+				{
+					let betcode = "";
+					betcode = `<script>\nconst ${iden} = {\n`;
+					for ( let axi = 0; axi < attr.length; axi++ )
+					{
+						let atr = attr[axi];
+						if ( axi > 0 ) betcode += ', \n';
+						betcode += `${atr.key} : '${atr.value}'`;
+					}
+					betcode += '\n};\n</script>';
+					evco = betcode + '\n' + evco;
+//console.log("\n\nevalCode: " + evco + '\n\n\n');
+				}
+				// *** //
+//console.log("component-code: " + out);
+				__kpi_parse_jsx( out, modifier, cbout, evco );
+				// *** //
+				__kpi_modified_specific_pipe_key_index++;
+				__kpi_modified_specific_pipe_foo_index++;
 				// *** //
 				return text;
 			}
 		);
-	}).
+	}).	
 	catch((err) => console.error('Error:', err));
 }
 
@@ -179,7 +297,10 @@ function __kpi_parse_jsx ( code, modifier, cbout, evcode )
 	if ( Array.isArray(modifier) )//&& modifier.length > 0 )
 	{
 		let state = false; let skip = false; let temp = "", outp = "";
-		let jsxmd = false; let skip_jsx_closer = false;
+		let jspip = false; let jskey = false; let jsfoo = false;
+		let jsxmd = false; let skip_jsx_closer = false; let jscut = false;
+		// *** //
+		const pipe = []; const jscode = [];
 		// *** //
 		const arry = []; let cmpnt = [];
 		// *** //
@@ -190,8 +311,8 @@ function __kpi_parse_jsx ( code, modifier, cbout, evcode )
 			switch ( code[next] )
 			{
 				case '<': case '>': case '%': case '{': case '}': 
-				case '"': case '`': case '\'':
-				case ' ': case '\t': case '\n': case '\r':
+				case '"': case '`': case '\'': case '(': case ')': case '.':
+				case '[': case ']': case ' ': case '\t': case '\n': case '\r':
 					if ( temp )
 						arry.push( temp );
 					// *** //
@@ -209,6 +330,179 @@ function __kpi_parse_jsx ( code, modifier, cbout, evcode )
 		if ( temp )
 			arry.push( temp );
 		// *** //
+		for ( let next = 0; next < arry.length; next++ )
+		{
+			switch(arry[next])
+			{
+				case '<':
+					if ( arry[next] == '<' && arry[next + 1] == 'pipe' )
+					{
+						arry[next    ] = '';
+						arry[next + 1] = '';
+						arry[next + 2] = '';
+						jspip = true;
+						next++;
+					}
+					else 
+					if ( arry[next] == '<' && arry[next + 1] == '/pipe' )
+					{
+						arry[next    ] = '';
+						arry[next + 1] = '';
+						arry[next + 2] = '';
+						jspip = false;
+						next++;
+					}
+					else
+					if ( arry[next] == '<' && arry[next + 1] == 'jsx' ||
+					     arry[next] == '<' && arry[next + 1] == 'js' )
+					{
+						jscut = true;
+						jscode.push(arry[next]);
+						arry[next] = '';
+					}
+					else
+					if ( arry[next] == '<' && arry[next + 1] == '/jsx' ||
+					     arry[next] == '<' && arry[next + 1] == '/js' )
+					{
+						jscut = false;
+						jscode.push(arry[next]);
+						jscode.push(arry[next + 1]);
+						jscode.push(arry[next + 2]);
+						arry[next] = '';
+						arry[next + 1] = '';
+						arry[next + 2] = '';
+					}
+					else
+					{
+						if ( jscut == true )
+						{
+							jscode.push(arry[next]);
+							arry[next] = '';
+						}
+						else 
+						if ( jspip == true )
+						{
+							if (arry[next] && 
+								arry[next] != '\n' && 
+								arry[next] != '\r' && 
+								arry[next] != '\t' && 
+								arry[next] != ' ')
+								pipe.push(arry[next]);
+							arry[next] = '';
+						}	
+					}
+					break;
+				default:
+					if ( jscut == true )
+					{
+						jscode.push(arry[next]);
+						arry[next] = '';
+					}
+					else 
+					if ( jspip == true )
+					{
+						if (arry[next] && 
+							arry[next] != '\n' && 
+							arry[next] != '\r' && 
+							arry[next] != '\t' && 
+							arry[next] != ' ' &&
+							arry[next] != '"' &&
+							arry[next] != '\'' &&
+							arry[next] != '`')
+							pipe.push(arry[next]);
+						arry[next] = '';
+					}
+			}
+		}
+		// *** //
+		if ( pipe.length > 0 )
+		{
+/*console.log("---------------------------");
+for ( let j of arry )
+			console.log(j);
+console.log("---------------------------");*/
+			const keys = [];
+			const foos = [];
+			// *** //
+			let pe = 0; let ty = 0; let nm = ""; let ix = 0; let el = "";
+			let compname = '';
+			// *** //
+			for ( let x = 0; x < pipe.length; x++ )
+			{
+				let elem = pipe[x];
+				// *** //
+				switch( elem )
+				{
+					case '<':
+						switch ( pipe[x + 1] )
+						{
+							case 'key': ty = 1; x++; break;
+							case 'foo': ty = 2; x++; break;
+						}
+						break;
+					case '>':
+						switch ( ty )
+						{
+							case 1:
+								keys.push( { type : 'key', name : nm, index : ix, element : el, counter : 0 } );
+								break;
+							case 2:
+								foos.push( { type : 'foo', name : nm, counter : 0 } );
+								break;
+						}
+						pe = 0;
+						break;
+					case '=':
+						if ( x > 0 )
+						{
+							switch( pipe[x - 1] )
+							{
+								case 'name':    nm = pipe[x + 1]; x++; break;
+								case 'index':   ix = pipe[x + 1]; x++; break;
+								case 'element': el = pipe[x + 1]; x++; break;
+							}
+						}
+				}
+			}
+			// *** //
+			for ( let next = 0; next < arry.length; next++ )
+			{
+				if ( arry[next] == '<' )
+					compname = arry[next + 1];
+				// *** //
+				arry[next] = __kpi_modify_specific_key_placeholder( arry[next], keys, foos, compname );
+			}
+			// *** //
+			if ( jscode.length > 0 )
+			{
+				for ( let next = 0; next < jscode.length; next++ )
+				{
+					if ( jscode[next] == '<' )
+						compname = jscode[next + 1];
+					// *** //
+					jscode[next] = __kpi_modify_specific_key_placeholder( jscode[next], keys, foos, compname );
+					// *** //
+					switch ( jscode[next] )
+					{
+						case 'jsx': case 'js':
+							if ( jscode[next - 1] == '<' )
+								jscode[next] = 'script';
+							break;
+						case '/jsx': case '/js':
+							if ( jscode[next - 1] == '<' )
+								jscode[next] = '/script';
+							break;
+						}
+					// *** //
+					evalCode += jscode[next];
+				}
+console.log(jscode);
+			}
+		}
+		// *** //
+/*console.log("------- >> << -------");
+for ( let next = 0; next < arry.length; next++ ) console.log( " --------: " + arry[next]);
+console.log("------- >> << -------");*/
 		let t = ""; let ji = false; let jstart = -1; let lc = '';
 		// *** //
 		for ( let next = 0; next < arry.length; next++ )
@@ -278,7 +572,7 @@ function __kpi_parse_jsx ( code, modifier, cbout, evcode )
 						t += '")';
 					// *** //
 					arry[next] = t;
-console.log(">----> " + t);
+//console.log(">----> " + t);
 				}
 				// *** //
 				t = "";
@@ -289,13 +583,13 @@ console.log(">----> " + t);
 						if ( next != jstart + 1 )
 							evalCode += arry[next];
 						break;
-					case '<':
+/*					case '<':
 						if ( next + 1 < arry.length && arry[next+1] != '/jsx' )
 							evalCode += arry[next];
 						break;
 					case '/jsx':
-						skip_jsx_closer = true;
-						break;
+						//skip_jsx_closer = true;
+						break;*/
 					case '{':
 						if ( next + 1 < arry.length && arry[next+1] == '%' )
 						{
@@ -369,17 +663,35 @@ console.log(">----> " + t);
 							}
 						}
 					}
-					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'jsx' && __kpi_installed_units.length > 0 )
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'jsx' && __kpi_installed_units.length > 0 || 
+					          next > 0 && arry[next -1] == '<' && arry[next] === 'js' && __kpi_installed_units.length > 0 )
 					{
 						arry[next] = "";//"<script>";
 						jstart = next;
 						jsxmd = true;
 						skip_jsx_closer = false;
 					}
-					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/jsx' && __kpi_installed_units.length > 0 )
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/jsx' && __kpi_installed_units.length > 0 ||
+					          next > 0 && arry[next -1] == '<' && arry[next] === '/js' && __kpi_installed_units.length > 0 )
 					{
 						arry[next] = "";//"</script>";
 						jsxmd = false;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'pipe' && __kpi_installed_units.length > 0 )
+					{
+						jspip = true;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === '/pipe' && __kpi_installed_units.length > 0 )
+					{
+						jspip = false;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'key' && __kpi_installed_units.length > 0 )
+					{
+						jskey = true;
+					}
+					else if ( next > 0 && arry[next -1] == '<' && arry[next] === 'foo' && __kpi_installed_units.length > 0 )
+					{
+						jsfoo = true;
 					}
 					else if ( next > 0 && arry[next -1] == '<' && __kpi_installed_units.length > 0 )
 					{
@@ -507,11 +819,18 @@ console.log(">----> " + t);
 				}
 			}
 		}
-console.log(outp);
-console.log(evalCode);
+//console.log(outp);
+//console.log(evalCode);
 		// *** //
 		cbout(outp,evalCode);
 		// *** //
+		evalCode = evalCode.replace('</script><script>\n', '');
+		evalCode = evalCode.replace('</script><script>', '');
+console.log( "-------------------------------------------- >>>>>>>" );
+console.log(outp);
+console.log( "-------------------------------------------- >>>>>>>" );
+console.log(evalCode);
+console.log( "-------------------------------------------- >>>>>>>" );
 		if ( evalCode && typeof evalCode === "string" )
 			eval(evalCode);
 		// *** //
@@ -528,8 +847,154 @@ const kpi = // Modular Chain-Root
 	 * KPI Version
 	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-	version: '1.0.4.0',
-	fullver: 'KPI 1.0.4.0, Compact Release',
+	version: '1.0.4.1',
+	fullver: 'KPI 1.0.4.1, Compact Release',
+
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * KPI-wide placeholder-list. Each entry is an object and
+	 * has the specification { entry : '', value : '' }. The key
+	 * is a string, the value must be a string or a number or a
+	 * float. Arrays, objects and other kind of data are not
+	 * supported. The keylist can be used to replace several 
+	 * placeholders within the jsh-files while pre-compiling.
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+	keylist : 
+	{
+		add : function(value)
+		{
+			__kpi_keylist_array_object.push(value);
+		},
+
+		count : function(value)
+		{
+			return __kpi_keylist_array_object.length;
+		}
+	},
+
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * KPI is able to format a text-stream using syntax-highlighting.
+	 * For that you have to specify an object like this:
+	 * 
+	 * {
+	 *    element : 'name', // Name of the pseudo-html-element that is
+	 *                      // enclosing the code
+	 *    strings : [],     // You can specify the string-characters
+	 *    comments : [],    // You can specify the comment-characters
+	 *    numerics : [],    // You can specify numerical value-sets
+	 * 	  spchars : [],     // Special characters
+	 *    keys : [],        // You can specify your keywords
+	 *    indents : []      // You can specify the rules for indentions
+	 * }
+	 * 
+	 * String-Entry-Structure:
+	 * 
+	 * {
+	 *    enter : '',         // Must be: The sequence-char(s) beginning the string
+	 *    leave : '',         // Must be: The sequence-char(s) closing the string
+	 *    charcolor : '',     // Must be: Color of all enclosed characters
+	 *    backcolor : '',     // Optional: Background-color
+	 *    font : {            // All optional
+	 *        name : '',
+	 *        size : '',
+	 *        bold : boolean,
+	 *        italic : boolean,
+	 *        uline : boolean,
+	 *        strike : boolean
+	 *    }
+	 * }
+	 * 
+	 * Comment-Entry-Structure:
+	 * 
+	 * {
+	 *    enter : '',         // Must be: The sequence-char(s) beginning the comment
+	 *    leave : '',         // Must be: The sequence-char(s) closing the comment
+	 *    charcolor : '',     // Must be: Color of all enclosed characters
+	 *    backcolor : '',     // Optional: Background-color
+	 *    font : {            // All optional
+	 *        name : '',
+	 *        size : '',
+	 *        bold : boolean,
+	 *        italic : boolean,
+	 *        uline : boolean,
+	 *        strike : boolean
+	 *    }
+	 * }
+	 * 
+	 * numerics-Entry-Structure:
+	 * 
+	 * {
+	 *    charset : '',       // Must be: Characters
+	 *    beginchar : '',     // Optional: You can specify a beginning character
+	 *    closechar : '',     // Optional: You can specify a closing character
+	 *    charcolor : '',     // Must be: Color of all enclosed characters
+	 *    backcolor : '',     // Optional: Background-color
+	 *    font : {            // All optional
+	 *        name : '',
+	 *        size : '',
+	 *        bold : boolean,
+	 *        italic : boolean,
+	 *        uline : boolean,
+	 *        strike : boolean
+	 *    }
+	 * }
+	 * 
+	 * spchars-Enry-Structure:
+	 * 
+	 * {
+	 *    charset : '',      // Must be: The special characters
+	 *    charcolor : '',     // Must be: Color of all enclosed characters
+	 *    backcolor : '',     // Optional: Background-color
+	 *    font : {            // All optional
+	 *        name : '',
+	 *        size : '',
+	 *        bold : boolean,
+	 *        italic : boolean,
+	 *        uline : boolean,
+	 *        strike : boolean
+	 *    }
+	 * }
+	 * 
+	 * key-Entry-Structure:
+	 * 
+	 * {
+	 *    keywords : [],      // Must be: The keywords
+	 *    casesens : boolean, // Must be: Case Sensitivity
+	 *    beginchar : '',     // Optional: You can specify a beginning character
+	 *    closechar : '',     // Optional: You can specify a closing character
+	 *    charcolor : '',     // Must be: Color of all enclosed characters
+	 *    backcolor : '',     // Optional: Background-color
+	 *    font : {            // All optional
+	 *        name : '',
+	 *        size : '',
+	 *        bold : boolean,
+	 *        italic : boolean,
+	 *        uline : boolean,
+	 *        strike : boolean
+	 *    }
+	 * }
+	 * 
+	 * indent-Entry-Structure:
+	 * 
+	 * {
+	 *    beginkey : '',      // Must be: Beginning indention
+	 *    closekey : ''       // Must be: Closing indention
+	 * }
+	 * 
+	 * Element sample:
+	 * 
+	 * <cpp>
+	 *     // Write c++ code
+	 * </cpp>
+	 * 
+	 * or
+	 * 
+	 * <swift>
+	 *     // Write swift code
+	 * </swift>
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+	synhigh : [],
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * The body-element
@@ -618,7 +1083,15 @@ const kpi = // Modular Chain-Root
 	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 	doc : document,
+	eid : document.getElementById,
+	enm : document.getElementsByTagName,
+	ens : document.getElementsByTagNameNS,
+	ecs : document.getElementsByClassName,
+	sel : document.querySelector,
+	sal : document.querySelectorAll,
 	wnd : window,
+	int : window.setInterval,
+	tmr : window.setTimeout,
 	nav : navigator,
 	loc : location,
 	his : history,
@@ -1045,6 +1518,12 @@ const kpi = // Modular Chain-Root
 
 		this._ky = [];
 
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* create containers that automatically wrap to the next row
+		* if the current one has not enough space to provice the
+		* specific container-content.
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.wrap = function () {
 
 			if ( arguments.length > 0 )
@@ -1106,7 +1585,11 @@ const kpi = // Modular Chain-Root
 			return '';
 
 		}
-	
+
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Create containers that will be moved to an own row
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.rows = function () {
 
 			if ( arguments.length > 0 )
@@ -1168,7 +1651,11 @@ const kpi = // Modular Chain-Root
 			return '';
 
 		}
-	
+
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Create containers that act like columns
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.cols = function () {
 
 			if ( arguments.length > 0 )
@@ -1231,6 +1718,20 @@ const kpi = // Modular Chain-Root
 
 		}
 
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Create containers that are arranged in a complex cell 
+		* relationship like in a table structure.
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+		this.grid = function () {
+
+		}
+
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		* Creates a complex viewport structure, which can be composed 
+		* of WRAP, ROWS, COLS and GRID.e
+		* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 		this.tile = function () {
 
 			/*
@@ -1243,6 +1744,7 @@ const kpi = // Modular Chain-Root
 					{ model : 'wrap', fields : [ 100, 50, 20, 30, 50 ] },
 					{ model : 'cols', fields : ... },
 					{ model : 'rows', fields : ... },
+					{ model : 'grid', fields : ... }
 
 				)
  
@@ -1489,6 +1991,10 @@ const kpi = // Modular Chain-Root
 
 			if ( document.getElementById(this._ky[index]) != null )
 			return document.getElementById(this._ky[index]).innerHTML;
+
+		}
+
+		this.grab = function () {
 
 		}
 

@@ -1,0 +1,76 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>kpi</title>
+		<meta charset = "utf-8">
+		<script type = "text/javascript" src = "kpi.js"></script>
+        <script type = "text/javascript" src = "extensions/kpi-animator.js"></script>
+        <style>
+            .a
+            {
+                background-color:bisque;
+                height: 100px;
+                opacity: 1.0;
+            }
+            .b
+            {
+                background-color:darksalmon;
+                height: 100px;
+                opacity: 1.0;
+            }
+            .c
+            {
+                background-color:wheat;
+                height: 100px;
+                opacity: 1.0;
+            }
+            .d
+            {
+                background-color:lightsteelblue;
+                height: 100px;
+                opacity: 1.0;
+            }
+        </style>
+	</head>
+	<body>
+        <div class = "a" id = "a"></div>
+        <div class = "b" id = "b"></div>
+        <div class = "c" id = "c"></div>
+        <div class = "d" id = "d"></div>
+        <script>
+            const a = new kpiAnimator( { type : "id", entity : "a" } );
+            const b = new kpiAnimator( { type : "id", entity : "b" } );
+            const c = new kpiAnimator( { type : "id", entity : "c" } );
+            const d = new kpiAnimator( { type : "id", entity : "d" } );
+            // *** //
+            a.anim.iteration = '8s'; a.anim.delay = '1s'; a.anim.duration = '1s';
+            b.anim.iteration = '6s'; b.anim.easing = 'ease-out';
+            c.anim.iteration = '1s'; c.anim.easing = 'ease-in';
+            d.anim.iteration = '2s'; d.anim.easing = 'linear';
+            // *** //
+            a.pre( (me) => { if (me.style.width == '') me.style.width = '0px'; } );
+            b.pre( (me) => { if (me.style.width == '') me.style.width = '0px'; } );
+            c.pre( (me) => { if (me.style.width == '') me.style.width = '0px'; } );
+            d.pre( (me) => { if (me.style.width == '') me.style.width = '0px'; } );
+            // *** //
+            a.on( (me) => { me.style.width = "200px"; me.style.marginLeft = '80px';  } );
+            b.on( (me) => { me.style.width = "500px"; me.style.marginLeft = '120px'; } );
+            // *** //
+            c.on( (me) => { me.style.width = "400px"; me.style.marginLeft = '140px'; },
+                  (me) => { me.style.width = "50px"; me.style.marginLeft = '90px'; },
+                  (me) => { me.style.width = "300px"; me.style.margin = "10px";
+                            me.style.marginLeft = '110px'; me.style.transform = "rotate(180deg)"; 
+                            me.style.border = "10px double red"; me.style.position = "absolute"; },
+                  (me) => { me.style.width = "50px"; me.style.margin = "4px";
+                            me.style.marginLeft = '90px'; me.style.transform = "rotate(90deg)";
+                            me.style.border = "2px solid gray"; 
+                            me.style.boxShadow = "inset 0px 0px 4px rgba(0,0,0,0.8)";
+                            me.style.marginTop = "70px"; me.style.marginLeft = "20px"; }
+            );
+            d.on( (me) => { me.style.width = "300px"; me.style.marginLeft = '160px'; },
+                  (me) => { me.style.width = "100px"; me.style.marginLeft = '60px'; } 
+            );
+        </script>
+	</body>
+</html>
