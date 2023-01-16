@@ -13,17 +13,16 @@
 
 <jsx>
 
-    const handleMe = () =>
+    function handleMe ()
     {
         alert (`This is\n\n${mydata.title}\n${mydata.name}\n${mydata.email}`);
-    };
+    }
 
 </jsx>
 
 <!-- Card component is using another component -->
 
 <div class = "kpi-component-card">
-    <about name = "Abduelaziz Kurt" title = "Full-Stack Developer" email = "abdkurt1982@gmail.com">
+    <about * = "mydata" name = "%sname, %fname" title = "%topic" email = "%mail">
     <button onclick = "handleMe()">Click</button>
 </div>
-

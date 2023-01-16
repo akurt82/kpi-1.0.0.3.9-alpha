@@ -85,6 +85,18 @@
                 }
             );
             /* * * * * * * * * * * * * * * * * * * * * * * * *
+             * Install the card-component
+             * * * * * * * * * * * * * * * * * * * * * * * * */
+             kpi.install
+            (
+                {
+                    type: 'jsx',
+                    name: 'card',
+                    source: `${cmpnts}/card/card.jsh`,
+                    style: `${cmpnts}/card/card.css`
+                }
+            );
+            /* * * * * * * * * * * * * * * * * * * * * * * * *
              * Append placeholders for jsh pre-compilation
              * * * * * * * * * * * * * * * * * * * * * * * * */
             kpi.keylist.add
@@ -161,12 +173,21 @@
                             }
                         ]
                     }
+                },
+				{ path: '/cards', 
+                  page:
+                    {
+                        type : 'jsx',
+                        url  : `${routes}/cards.jsh`,
+                        pattern : page_structure,
+                        modifier : []
+                    }
                 }
 			);
             /* * * * * * * * * * * * * * * * * * * * * * * * *
              * Route to the root-page (main-page)
              * * * * * * * * * * * * * * * * * * * * * * * * */
-            router.goto("/");
+            router.goto("/cards");
 		</script>
 	</body>
 </html>
